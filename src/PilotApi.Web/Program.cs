@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using PilotApi.Shared.Logging.Extensions;
 using Serilog;
 using System;
 
@@ -13,19 +14,14 @@ try
 	// app: create
 	var webAppBuilder = WebApplication.CreateBuilder(args);
 
-	webAppBuilder.Services.AddSerilog((services, lc) => lc
-		.ReadFrom.Configuration(webAppBuilder.Configuration)
-		.ReadFrom.Services(services));
-
-	//webAppBuilder.Services.AddOpenApi();
+	// shared: setup
+	webAppBuilder.ApiWebApplicationBuilder();
 
 	// app: build
 	var webApp = webAppBuilder.Build();
 
-	//webApp.MapOpenApi();
-	//webApp.MapScalarApiReference();
-	webApp.UseSerilogRequestLogging();
-	webApp.UseHttpsRedirection();
+	// shared: setup
+	webApp.ApiWebApplication();
 
 	webApp.MapGet("/", () => "Hello from Serilog!");
 

@@ -3,6 +3,8 @@
     "PilotApi.Web": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "scalar",
+      "launchUrl.swagger": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

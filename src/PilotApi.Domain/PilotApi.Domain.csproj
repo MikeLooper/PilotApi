@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+	<OutputType>Library</OutputType>
+	<TargetFramework>net10.0</TargetFramework>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
+	<ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
   </ItemGroup>
 
 </Project>
