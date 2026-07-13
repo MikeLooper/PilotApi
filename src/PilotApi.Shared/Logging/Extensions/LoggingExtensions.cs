@@ -63,10 +63,11 @@ namespace PilotApi.Shared.Logging.Extensions
 					+ $"A valid object type of: '{typeof(WebApplicationBuilder)}' is needed to continue. ({nameof(LoggingExtensions)})");
 			}
 
-			builder.Services.AddSerilog((services, lc) =>
-						lc
+			builder.Services.AddSerilog((services, loggerConfig) => loggerConfig
 						.ReadFrom.Configuration(builder.Configuration)
-						.ReadFrom.Services(services));
+						.ReadFrom.Services(services)
+						.Enrich.FromLogContext()
+						.WriteTo.Console());
 		}
 	}
 }

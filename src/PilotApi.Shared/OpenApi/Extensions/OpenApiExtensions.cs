@@ -1,11 +1,10 @@
-﻿using Asp.Versioning.ApiExplorer;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Scalar.AspNetCore;
 using System;
 
-namespace PilotApi.Shared.Logging.Extensions
+namespace PilotApi.Shared.OpenApi.Extensions
 {
 	/// <summary>
 	/// Extension methods for OpenApi.

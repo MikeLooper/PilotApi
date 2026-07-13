@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using PilotApi.Shared.Logging.Extensions;
+using PilotApi.Shared.OpenApi.Extensions;
+using PilotApi.Shared.Swagger.Extensions;
 using System;
 
-namespace PilotApi.Shared.Logging.Extensions
+namespace PilotApi.Shared.Api.Extensions
 {
 	/// <summary>
 	/// Extension methods for APIs.

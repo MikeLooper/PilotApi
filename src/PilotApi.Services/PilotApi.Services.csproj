@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\PilotApi.Domain\PilotApi.Domain.csproj" />
+	<ProjectReference Include="..\PilotApi.Repositories\PilotApi.Repositories.csproj" />
 	<ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
   </ItemGroup>
 

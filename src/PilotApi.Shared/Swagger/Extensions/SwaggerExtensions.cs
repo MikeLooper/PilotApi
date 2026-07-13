@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using System;
 
-namespace PilotApi.Shared.Logging.Extensions
+namespace PilotApi.Shared.Swagger.Extensions
 {
 	/// <summary>
 	/// Extension methods for Swagger.

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
-using PilotApi.Shared.Logging.Extensions;
+using PilotApi.Shared.Api.Extensions;
+using PilotApi.Web.Extensions;
 using Serilog;
 using System;
 
@@ -16,6 +17,7 @@ try
 
 	// shared: setup
 	webAppBuilder.ApiWebApplicationBuilder();
+	webAppBuilder.ApplicationRegistration();
 
 	// app: build
 	var webApp = webAppBuilder.Build();
