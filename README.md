@@ -23,10 +23,10 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-<h3 align="center">project_title</h3>
+<h3 align="center">Pilot API</h3>
 
   <p align="center">
-    project_description
+    A proof of concept API to explore best-practices and new ideas
     <br />
     <a href="https://github.com/MikeLooper/repo_name"><strong>Explore the docs »</strong></a>
     <br />
@@ -96,8 +96,7 @@ A proof of concept API to explore best-practices and new ideas
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
+TBD
 
 ### Prerequisites
 

@@ -1,18 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+	<OutputType>Library</OutputType>
+	<TargetFramework>net10.0</TargetFramework>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.79" />
-    <PackageReference Include="Npgsql" Version="10.0.3" />
+	<PackageReference Include="Dapper" Version="2.1.79" />
+	<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+	<PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PilotApi.Domain\PilotApi.Domain.csproj" />
-    <ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
+	<ProjectReference Include="..\PilotApi.Domain\PilotApi.Domain.csproj" />
+	<ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
   </ItemGroup>
 
 </Project>

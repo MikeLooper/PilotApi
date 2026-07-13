@@ -1,4 +1,5 @@
 .vs
 bin/
-log/
+logs/
 obj/
+temp/
