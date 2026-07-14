@@ -1,9 +1,7 @@
-﻿using Asp.Versioning;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PilotApi.Domain.Contracts.Services;
+using PilotApi.Domain.Contracts.Base;
 using PilotApi.Domain.Models.Dto;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,28 +9,49 @@ using System.Threading.Tasks;
 namespace PilotApi.Web.Controllers
 {
 	/// <summary>
-	/// A contrller for accessing and manipulating Employees data in the data store.
+	/// A base for API controllers that implement CRUD operations for a given DTO type.
 	/// </summary>
-	[ApiVersion("1.0")]
-	[Route("Employees")]
-
-	public class EmployeesController : SimpleControllerBase
+	/// <typeparam name="Dto">
+	/// A DTO object.
+	/// </typeparam>
+	/// <example>
+	/// Example usage:
+	/// <code>
+	///	[ApiVersion("1.0")]
+	///	[Route("Categories")]
+	///	public class CategoriesController : ControllerBase&lt;CategoriesDto&gt;
+	///	{
+	///		public CategoriesController(ICategoriesService service)
+	///			: base(service)
+	///		{
+	///		}
+	/// </code>
+	/// </example>	[ApiController]
+	[Produces("application/json")]
+	[Consumes("application/json")]
+	public class CrudControllerBase<Dto> : Controller where Dto : IDtoBase
 	{
 		/// <summary>
-		/// Instantiate a <see cref="EmployeesController"/> object.
+		/// Instantiates a new instance of the <see cref="CrudControllerBase{Dto}"/> class.
 		/// </summary>
 		/// <param name="service">
-		/// A service object.
+		/// A service that implements CRUD operations for the given DTO type.
 		/// </param>
-		public EmployeesController(IEmployeesService service)
+		public CrudControllerBase(IServiceBase<Dto> service)
 		{
 			this.Service = service;
 		}
 
 		/// <summary>
+		/// Gets or sets the API version to apply to an operation.
+		/// </summary>
+		[FromHeader(Name = "ApiVersion")]
+		public string? ApiVersion { get; set; }
+
+		/// <summary>
 		/// Gets the service that implements CRUD operations for the given DTO type.
 		/// </summary>
-		protected IEmployeesService Service { get; }
+		protected IServiceBase<Dto> Service { get; }
 
 		/// <summary>
 		/// Gets all DTO objects of the given type.
@@ -42,7 +61,7 @@ namespace PilotApi.Web.Controllers
 		/// </returns>
 		[HttpGet]
 		[Route("get-all")]
-		[ProducesResponseType<IList<EmployeesDto>>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetAll()
 		{
 			var result = await this.Service.GetAllAsync();
@@ -65,7 +84,7 @@ namespace PilotApi.Web.Controllers
 		/// </returns>
 		[HttpGet]
 		[Route("get/{id:int}")]
-		[ProducesResponseType<EmployeesDto>(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetById(
 			[Required][FromRoute] int id)
 		{
@@ -90,11 +109,12 @@ namespace PilotApi.Web.Controllers
 		[Route("add")]
 		[ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
 		public async Task<IActionResult> Add(
-			[Required][FromBody] EmployeesDto model)
+			[Required][FromBody] Dto model)
 		{
 			var result = await this.Service.InsertAsync(model);
 			if (result <= 0)
 			{
+				this.Response.Headers["Warning"] = "Update attempt failed in the database";
 				return this.BadRequest();
 			}
 
@@ -114,12 +134,12 @@ namespace PilotApi.Web.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Update(
-			[Required][FromBody] EmployeesDto model)
+			[Required][FromBody] Dto model)
 		{
 			var result = await this.Service.UpdateAsync(model);
 			if (!result)
 			{
-				this.Response.Headers["Warning"] = "Update attempt failed in the database";
+				this.Response.Headers["Warning"] = "Delete attempt failed in the database";
 				return this.BadRequest();
 			}
 
@@ -137,14 +157,12 @@ namespace PilotApi.Web.Controllers
 		[HttpPost]
 		[Route("delete/{id:int}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Delete(
 			[Required][FromRoute] int id)
 		{
 			var result = await this.Service.DeleteAsync(id);
 			if (!result)
 			{
-				this.Response.Headers["Warning"] = "Delete attempt failed in the database";
 				return this.BadRequest();
 			}
 

@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
+<PropertyGroup>
 	<TargetFramework>net10.0</TargetFramework>
 	<Nullable>enable</Nullable>
-	  
-	 <!-- OpenApi -->
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<OpenApiGenerateDocumentsOptions>--openapi-version OpenApi3_1</OpenApiGenerateDocumentsOptions>
-  </PropertyGroup>
 
-  <ItemGroup>
+	<!-- OpenApi -->
+	<OpenApiGenerateDocumentsOptions>--openapi-version OpenApi3_1</OpenApiGenerateDocumentsOptions>
+</PropertyGroup>
+	
+<ItemGroup>
 	<ProjectReference Include="..\PilotApi.Domain\PilotApi.Domain.csproj" />
 	<ProjectReference Include="..\PilotApi.Services\PilotApi.Services.csproj" />
 	<ProjectReference Include="..\PilotApi.Shared\PilotApi.Shared.csproj" />
-  </ItemGroup>
+</ItemGroup>
 
 </Project>

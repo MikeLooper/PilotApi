@@ -7,8 +7,16 @@ using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
 {
+	/// <summary>
+	/// A repository for accessing and manipulating category data in the data store.
+	/// </summary>
 	public class CategoriesRepository : RepositoryBase<ICategoriesEntity>, ICategoriesRepository
 	{
+		/// <summary>
+		/// Instantiates a new instance of the <see cref="CategoriesRepository"/> class.
+		/// </summary>
+		/// <param name="loggerFactory"></param>
+		/// <param name="dataStoreContext"></param>
 		public CategoriesRepository(
 			ILoggerFactory loggerFactory,
 			IDataStoreContext dataStoreContext)
@@ -16,6 +24,7 @@ namespace PilotApi.Repositories.Repositories
 		{
 		}
 
+		/// <inheritdoc/>>
 		protected override List<string> ColumnNames
 		{
 			get
@@ -30,6 +39,16 @@ namespace PilotApi.Repositories.Repositories
 			}
 		}
 
+		/// <inheritdoc/>>
+		protected override string KeyColumnName
+		{
+			get
+			{
+				return "CategoryID";
+			}
+		}
+
+		/// <inheritdoc/>>
 		protected override string TableName
 		{
 			get

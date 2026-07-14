@@ -86,27 +86,31 @@ namespace PilotApi.Domain.Models.Dto
 		{
 			if (string.IsNullOrWhiteSpace(this.DatabaseName))
 			{
-				throw new ConfigurationException($"The {nameof(this.DatabaseName)} property is required and cannot be null or empty.");
+				throw new ConfigurationException($"The {nameof(this.DatabaseName)} value is required and cannot be null or empty.");
 			}
 
 			if (string.IsNullOrWhiteSpace(this.DatabaseType))
 			{
-				throw new ConfigurationException($"The {nameof(this.DatabaseType)} property is required and cannot be null or empty.");
+				throw new ConfigurationException($"The {nameof(this.DatabaseType)} value is required and cannot be null or empty.");
+			}
+			else if (!this.DatabaseType.Equals("SqlServer") && !this.DatabaseType.Equals("PostgreSQL"))
+			{
+				throw new ConfigurationException($"The {nameof(this.DatabaseType)} value is not valid.  Valid values include: 'SqlServer' and 'PostgreSQL'.");
 			}
 
 			if (string.IsNullOrWhiteSpace(this.Host))
 			{
-				throw new ConfigurationException($"The {nameof(this.Host)} property is required and cannot be null or empty.");
+				throw new ConfigurationException($"The {nameof(this.Host)} value is required and cannot be null or empty.");
 			}
 
 			if (string.IsNullOrWhiteSpace(this.Password))
 			{
-				throw new ConfigurationException($"The {nameof(this.Password)} property is required and cannot be null or empty.");
+				throw new ConfigurationException($"The {nameof(this.Password)} value is required and cannot be null or empty.");
 			}
 
 			if (string.IsNullOrWhiteSpace(this.UserName))
 			{
-				throw new ConfigurationException($"The {nameof(this.UserName)} property is required and cannot be null or empty.");
+				throw new ConfigurationException($"The {nameof(this.UserName)} value is required and cannot be null or empty.");
 			}
 		}
 	}

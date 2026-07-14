@@ -25,8 +25,6 @@ try
 	// shared: setup
 	webApp.ApiWebApplication();
 
-	webApp.MapGet("/", () => "Hello from Serilog!");
-
 	// app: run
 	webApp.Run();
 }

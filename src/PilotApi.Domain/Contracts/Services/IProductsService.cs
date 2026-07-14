@@ -3,6 +3,9 @@ using PilotApi.Domain.Models.Dto;
 
 namespace PilotApi.Domain.Contracts.Services
 {
+	/// <summary>
+	/// An interface for a service that implements CRUD operations for the <see cref="ProductsDto"/> type.
+	/// </summary>
 	public interface IProductsService : IServiceBase<ProductsDto>
 	{
 	}

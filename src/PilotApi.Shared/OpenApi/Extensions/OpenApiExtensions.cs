@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PilotApi.Shared.OpenApi.Transformers;
 using Scalar.AspNetCore;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace PilotApi.Shared.OpenApi.Extensions
 {
@@ -43,7 +46,14 @@ namespace PilotApi.Shared.OpenApi.Extensions
 			builder.Services.AddOpenApi(options =>
 			{
 				// Specify the OpenAPI version to use
-				options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+				options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1;
+
+				// transformers
+				options.AddOperationTransformer<GlobalOperationTransformer>();
+
+				var xmlFilename = $"{Assembly.GetEntryAssembly().GetName().Name}.xml";
+				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+				options.AddOperationTransformer(new ManualXmlCommentsOperationTransformer(xmlPath));
 			});
 		}
 

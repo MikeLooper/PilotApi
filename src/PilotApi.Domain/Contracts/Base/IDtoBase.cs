@@ -1,7 +1,10 @@
 ﻿namespace PilotApi.Domain.Contracts.Base
 {
+	/// <summary>
+	/// The interface for the base of DTO objects.
+	/// </summary>
 	public interface IDtoBase
 	{
-		//public long Id { get; set; }
+		//long Id { get; set; }
 	}
 }

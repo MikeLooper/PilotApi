@@ -8,8 +8,24 @@ using PilotApi.Services.Contracts;
 
 namespace PilotApi.Services.Serices
 {
+	/// <summary>
+	/// A service for accessing and manipulating Suppliers data in the data store.
+	/// </summary>
 	public class SuppliersService : ServiceBase<SuppliersDto, ISuppliersEntity>, ISuppliersService
 	{
+
+		/// <summary>
+		/// Instantiate a <see cref="SuppliersService"/> object.
+		/// </summary>
+		/// <param name="loggerFactory">
+		/// A logger factory object.
+		/// </param>
+		/// <param name="repository">
+		/// A repository object.
+		/// </param>
+		/// <param name="dataMapperHandler">
+		/// A data mapper handler object.
+		/// </param>
 		public SuppliersService(
 			ILoggerFactory loggerFactory,
 			ISuppliersRepository repository,

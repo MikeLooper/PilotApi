@@ -8,8 +8,24 @@ using PilotApi.Services.Contracts;
 
 namespace PilotApi.Services.Serices
 {
+	/// <summary>
+	/// A service for accessing and manipulating OrderDetails data in the data store.
+	/// </summary>
 	public class OrderDetailsService : ServiceBase<OrderDetailsDto, IOrderDetailsEntity>, IOrderDetailsService
 	{
+
+		/// <summary>
+		/// Instantiate a <see cref="OrderDetailsService"/> object.
+		/// </summary>
+		/// <param name="loggerFactory">
+		/// A logger factory object.
+		/// </param>
+		/// <param name="repository">
+		/// A repository object.
+		/// </param>
+		/// <param name="dataMapperHandler">
+		/// A data mapper handler object.
+		/// </param>
 		public OrderDetailsService(
 			ILoggerFactory loggerFactory,
 			IOrderDetailsRepository repository,
