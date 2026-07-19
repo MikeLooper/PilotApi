@@ -1,8 +1,8 @@
 ﻿using Asp.Versioning;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PilotApi.Shared.Handlers;
 using PilotApi.Shared.Logging.Extensions;
 using PilotApi.Shared.OpenApi.Extensions;
 using PilotApi.Shared.Swagger.Extensions;
@@ -102,7 +102,7 @@ namespace PilotApi.Shared.Api.Extensions
 			webApp.LoggingWebApplication();
 			webApp.SwaggerWebApplication();
 
-			// .NET
+			// standard
 			webApp.UseSecurity();
 			webApp.MapControllers();
 		}
@@ -139,13 +139,16 @@ namespace PilotApi.Shared.Api.Extensions
 			// custom
 			builder.LoggingWebApplicationBuilder();
 			builder.OpenApiWebApplicationBuilder();
+
+			// services
+			builder.Services.AddTransient<ISqlBuilder, SqlBuilder>();
 		}
 
 		/// <summary>
 		/// Add security processing via the WebApplication.
 		/// </summary>
-		/// <param name="services">
-		/// A list of service objects.
+		/// <param name="webApp">
+		/// A WebApplication object.
 		/// </param>
 		public static void UseSecurity(this WebApplication webApp)
 		{

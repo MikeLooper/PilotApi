@@ -1,13 +1,18 @@
 ﻿using PilotApi.Domain.Contracts.Base;
+using PilotApi.Domain.Contracts.Entities.Base;
 using PilotApi.Domain.Models.Dto;
 using PilotApi.Repositories.Models.Base;
 using PilotApi.Repositories.Models.Entities;
 using PilotApi.Services.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PilotApi.Services.Handlers
 {
+	/// <summary>
+	/// A data mapping handler.
+	/// </summary>
 	public class DataMapperHandler : IDataMapperHandler
 	{
 		/// <inheritdoc/>>
@@ -20,55 +25,45 @@ namespace PilotApi.Services.Handlers
 				return default;
 			}
 
-			(bool convertSuccess, TEntity? value) = CategoriesDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
+			TEntity? value = default;
+			if (dto is CategoriesDto)
 			{
-				return value;
+				value = this.CategoriesDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is CustomersDto)
+			{
+				value = this.CustomersDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is EmployeesDto)
+			{
+				value = this.EmployeesDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is OrderDetailsDto)
+			{
+				value = this.OrderDetailsDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is OrdersDto)
+			{
+				value = this.OrdersDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is ProductsDto)
+			{
+				value = this.ProductsDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is ShippersDto)
+			{
+				value = this.ShippersDtoConverter<TDto, TEntity>(dto);
+			}
+			else if (dto is SuppliersDto)
+			{
+				value = this.SuppliersDtoConverter<TDto, TEntity>(dto);
+			}
+			else
+			{
+				throw new InvalidOperationException($"No mapper was found for the {dto.GetType().Name} DTO object ({this.GetType().Name})");
 			}
 
-			(convertSuccess, value) = CustomersDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = EmployeesDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = OrderDetailsDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = OrdersDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = ProductsDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = ShippersDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			(convertSuccess, value) = SuppliersDtoConverter<TDto, TEntity>(dto);
-			if (convertSuccess)
-			{
-				return value;
-			}
-
-			return default;
+			return value;
 		}
 
 		/// <inheritdoc/>>
@@ -76,60 +71,52 @@ namespace PilotApi.Services.Handlers
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
-			if (entity != null)
+			if (entity == null)
 			{
-				(bool convertSuccess, TDto? value) = CategoriesEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = CustomersEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = EmployeesEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = OrderDetailsEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = OrdersEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = ProductsEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = ShippersEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
-				(convertSuccess, value) = SuppliersEntityConverter<TDto, TEntity>(entity);
-				if (convertSuccess)
-				{
-					return value;
-				}
-
 				return default;
 			}
 
-			return default;
+			TDto? value = default;
+			if (entity is CategoriesEntity)
+			{
+				value = CategoriesEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is CustomersEntity)
+			{
+				value = this.CustomersEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is EmployeesEntity)
+			{
+				value = this.EmployeesEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is OrderDetailsEntity)
+			{
+				value = this.OrderDetailsEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is OrdersEntity)
+			{
+				value = this.OrdersEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is ProductsEntity)
+			{
+				value = this.ProductsEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is ShippersEntity)
+			{
+				value = this.ShippersEntityConverter<TDto, TEntity>(entity);
+			}
+			else if (entity is SuppliersEntity)
+			{
+				value = this.SuppliersEntityConverter<TDto, TEntity>(entity);
+			}
+			else
+			{
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+				throw new InvalidOperationException($"No mapper was found for the {entity.GetType().Name} Entity object ({this.GetType().Name})");
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+			}
+
+			return value;
 		}
 
 		/// <inheritdoc/>>
@@ -158,19 +145,13 @@ namespace PilotApi.Services.Handlers
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto">
-		/// 
-		/// </typeparam>
-		/// <typeparam name="Entity">
-		/// 
-		/// </typeparam>
 		/// <param name="sourceDto">
-		/// 
+		/// A source DTO object.
 		/// </param>
 		/// <returns>
-		/// 
+		/// The resulting conversion settings.
 		/// </returns>
-		protected (bool convertSuccess, TEntity? value) CategoriesDtoConverter<TDto, TEntity>(TDto sourceDto)
+		protected TEntity? CategoriesDtoConverter<TDto, TEntity>(TDto sourceDto)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -185,20 +166,28 @@ namespace PilotApi.Services.Handlers
 					Picture = asCategories.Picture
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) CategoriesEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? CategoriesEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -213,20 +202,28 @@ namespace PilotApi.Services.Handlers
 					Picture = asCategories.Picture
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) CustomersDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? CustomersDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -248,20 +245,28 @@ namespace PilotApi.Services.Handlers
 					Fax = asCustomers.Fax
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) CustomersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? CustomersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -283,20 +288,28 @@ namespace PilotApi.Services.Handlers
 					Fax = asCustomers.Fax
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) EmployeesDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? EmployeesDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -325,20 +338,28 @@ namespace PilotApi.Services.Handlers
 					TitleOfCourtesy = asEmployees.TitleOfCourtesy
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) EmployeesEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? EmployeesEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -367,20 +388,28 @@ namespace PilotApi.Services.Handlers
 					TitleOfCourtesy = asEmployees.TitleOfCourtesy
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) OrderDetailsDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? OrderDetailsDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -396,20 +425,28 @@ namespace PilotApi.Services.Handlers
 					Discount = asOrderDetails.Discount
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) OrderDetailsEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? OrderDetailsEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -425,20 +462,28 @@ namespace PilotApi.Services.Handlers
 					Discount = asOrderDetails.Discount
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) OrdersDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? OrdersDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -463,20 +508,28 @@ namespace PilotApi.Services.Handlers
 					ShipCountry = asOrders.ShipCountry
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) OrdersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? OrdersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -501,20 +554,28 @@ namespace PilotApi.Services.Handlers
 					ShipCountry = asOrders.ShipCountry
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) ProductsDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? ProductsDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -535,27 +596,35 @@ namespace PilotApi.Services.Handlers
 					Discontinued = asProducts.Discontinued
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) ProductsEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? ProductsEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
-			var asProducts = sourceEntity as ProductsDto;
+			var asProducts = sourceEntity as ProductsEntity;
 			if (asProducts != null)
 			{
-				var newDto = new ProductsEntity
+				var newDto = new ProductsDto
 				{
 					ProductID = asProducts.ProductID,
 					ProductName = asProducts.ProductName,
@@ -569,20 +638,28 @@ namespace PilotApi.Services.Handlers
 					Discontinued = asProducts.Discontinued
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) ShippersDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? ShippersDtoConverter<TDto, TEntity>(TDto sourceDto)
 					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -596,20 +673,28 @@ namespace PilotApi.Services.Handlers
 					Phone = asShippers.Phone
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) ShippersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? ShippersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 			where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -623,20 +708,28 @@ namespace PilotApi.Services.Handlers
 					Phone = asShippers.Phone
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceDto"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TEntity? value) SuppliersDtoConverter<TDto, TEntity>(TDto sourceDto)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceDto">
+		/// A source DTO object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TEntity? SuppliersDtoConverter<TDto, TEntity>(TDto sourceDto)
 																							where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -659,20 +752,28 @@ namespace PilotApi.Services.Handlers
 					HomePage = asSuppliers.HomePage
 				};
 
-				return (convertSuccess: true, value: (TEntity)(dynamic)newEntity);
+				return (TEntity)(dynamic)newEntity;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 
 		/// <summary>
 		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value. 
 		/// </summary>
-		/// <typeparam name="Dto"></typeparam>
-		/// <typeparam name="Entity"></typeparam>
-		/// <param name="sourceEntity"></param>
-		/// <returns></returns>
-		protected (bool convertSuccess, TDto? value) SuppliersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
+		/// <typeparam name="TDto">
+		/// A DTO type.
+		/// </typeparam>
+		/// <typeparam name="TEntity">
+		/// An Entity type.
+		/// </typeparam>
+		/// <param name="sourceEntity">
+		/// A source Entity object.
+		/// </param>
+		/// <returns>
+		/// The resulting conversion settings.
+		/// </returns>
+		protected TDto? SuppliersEntityConverter<TDto, TEntity>(TEntity sourceEntity)
 																					where TDto : IDtoBase
 			where TEntity : IEntityBase
 		{
@@ -695,10 +796,10 @@ namespace PilotApi.Services.Handlers
 					HomePage = asSuppliers.HomePage
 				};
 
-				return (convertSuccess: true, value: (TDto)(dynamic)newDto);
+				return (TDto)(dynamic)newDto;
 			}
 
-			return (convertSuccess: false, value: default);
+			return default;
 		}
 	}
 }

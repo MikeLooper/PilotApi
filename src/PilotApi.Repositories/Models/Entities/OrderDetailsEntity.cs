@@ -38,5 +38,15 @@ namespace PilotApi.Repositories.Models.Entities
 		/// Gets or sets the unit price of the product in the order detail.
 		/// </summary>
 		public decimal UnitPrice { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Discount)}={this.Discount}, " +
+				$"{nameof(this.OrderID)}={this.OrderID}, " +
+				$"{nameof(this.ProductID)}={this.ProductID}, " +
+				$"{nameof(this.Quantity)}={this.Quantity}, " +
+				$"{nameof(this.UnitPrice)}={this.UnitPrice}";
+		}
 	}
 }

@@ -14,7 +14,7 @@ namespace PilotApi.Web.Controllers
 	/// A contrller for accessing and manipulating Orders data in the data store.
 	/// </summary>
 	[ApiVersion("1.0")]
-	[Route("Orders")]
+	[Route("orders")]
 
 	public class OrdersController : SimpleControllerBase
 	{
@@ -35,10 +35,10 @@ namespace PilotApi.Web.Controllers
 		protected IOrdersService Service { get; }
 
 		/// <summary>
-		/// Gets all DTO objects of the given type.
+		/// Gets all DTO objects from the order table.
 		/// </summary>
 		/// <returns>
-		/// A read only list of all DTO objects of the given type, or null if no objects exist.
+		/// A read only list of all DTO objects from the order table, or null if no objects exist.
 		/// </returns>
 		[HttpGet]
 		[Route("get-all")]
@@ -55,21 +55,21 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Gets a DTO object of the given type by its ID.
+		/// Gets a DTO object of the order record by its ID.
 		/// </summary>
-		/// <param name="id">
-		/// The ID of the DTO object to retrieve.
+		/// <param name="orderId">
+		/// The ID of the order record to retrieve.
 		/// </param>
 		/// <returns>
-		/// A DTO object of the given type with the specified ID, or null if no such object exists.
+		/// A DTO object of the order record with the specified ID, or null if no such object exists.
 		/// </returns>
 		[HttpGet]
-		[Route("get/{id:int}")]
+		[Route("get/{orderId}")]
 		[ProducesResponseType<OrdersDto>(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetById(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.GetByIdAsync(id);
+			var result = await this.Service.GetByIdAsync(orderId);
 			if (result == null)
 			{
 				return this.NotFound();
@@ -79,10 +79,10 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Adds a new DTO object of the given type.
+		/// Adds a new order record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to add.
+		/// A DTO object of the order record to add.
 		/// </param>
 		/// <returns>
 		/// </returns>
@@ -102,14 +102,14 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Updates an existing DTO object of the given type.
+		/// Updates an existing order record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to update.
+		/// A DTO object of the order record to update.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
+		[HttpPut]
 		[Route("update")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -127,21 +127,21 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Deletes a DTO object of the given type by its ID.
+		/// Deletes a order record by its ID.
 		/// </summary>
-		/// <param name="id">
-		/// An integer representing the ID of the DTO object to delete.
+		/// <param name="orderId">
+		/// An integer representing the ID of the order record to delete.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
-		[Route("delete/{id:int}")]
+		[HttpDelete]
+		[Route("delete/{orderId}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Delete(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.DeleteAsync(id);
+			var result = await this.Service.DeleteAsync(orderId);
 			if (!result)
 			{
 				this.Response.Headers["Warning"] = "Delete attempt failed in the database";

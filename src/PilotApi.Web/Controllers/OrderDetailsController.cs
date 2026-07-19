@@ -14,7 +14,7 @@ namespace PilotApi.Web.Controllers
 	/// A contrller for accessing and manipulating OrderDetails data in the data store.
 	/// </summary>
 	[ApiVersion("1.0")]
-	[Route("OrderDetails")]
+	[Route("order-details")]
 
 	public class OrderDetailsController : SimpleControllerBase
 	{
@@ -35,10 +35,10 @@ namespace PilotApi.Web.Controllers
 		protected IOrderDetailsService Service { get; }
 
 		/// <summary>
-		/// Gets all DTO objects of the given type.
+		/// Gets all DTO objects from the orderdetails table.
 		/// </summary>
 		/// <returns>
-		/// A read only list of all DTO objects of the given type, or null if no objects exist.
+		/// A read only list of all DTO objects from the orderdetails table, or null if no objects exist.
 		/// </returns>
 		[HttpGet]
 		[Route("get-all")]
@@ -55,21 +55,25 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Gets a DTO object of the given type by its ID.
+		/// Gets a DTO object of the orderdetails record by its IDs.
 		/// </summary>
-		/// <param name="id">
-		/// The ID of the DTO object to retrieve.
+		/// <param name="productId">
+		/// An integer representing the Product ID of the orderdetails record to delete.
+		/// </param>
+		/// <param name="orderId">
+		/// An integer representing the Order ID of the orderdetails record to delete.
 		/// </param>
 		/// <returns>
 		/// A DTO object of the given type with the specified ID, or null if no such object exists.
 		/// </returns>
 		[HttpGet]
-		[Route("get/{id:int}")]
+		[Route("get/product/{productId}/order/{orderId}")]
 		[ProducesResponseType<OrderDetailsDto>(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetById(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int productId,
+			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.GetByIdAsync(id);
+			var result = await this.Service.GetByIdAsync(productId, orderId);
 			if (result == null)
 			{
 				return this.NotFound();
@@ -79,10 +83,10 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Adds a new DTO object of the given type.
+		/// Adds a new orderdetails record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to add.
+		/// A DTO object of the orderdetails record to add.
 		/// </param>
 		/// <returns>
 		/// </returns>
@@ -102,14 +106,14 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Updates an existing DTO object of the given type.
+		/// Updates an existing orderdetails record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to update.
+		/// A DTO object of the orderdetails record to update.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
+		[HttpPut]
 		[Route("update")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -127,21 +131,25 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Deletes a DTO object of the given type by its ID.
+		/// Deletes a orderdetails record of the given type by its IDs.
 		/// </summary>
-		/// <param name="id">
-		/// An integer representing the ID of the DTO object to delete.
+		/// <param name="productId">
+		/// An integer representing the Product ID of the orderdetails record to delete.
+		/// </param>
+		/// <param name="orderId">
+		/// An integer representing the Order ID of the orderdetails record to delete.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
-		[Route("delete/{id:int}")]
+		[HttpDelete]
+		[Route("delete/product/{productId}/order/{orderId}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Delete(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int productId,
+			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.DeleteAsync(id);
+			var result = await this.Service.DeleteAsync(productId, orderId);
 			if (!result)
 			{
 				this.Response.Headers["Warning"] = "Delete attempt failed in the database";

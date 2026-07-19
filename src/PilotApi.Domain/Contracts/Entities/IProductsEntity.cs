@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 
 namespace PilotApi.Domain.Contracts.Entities
 {
@@ -29,7 +29,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// Gets or sets the name of the product. 
 		/// This property is required and cannot be null or empty.
 		/// </summary>
-		string ProductName { get; set; }
+		string? ProductName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the quantity of the product per unit. 

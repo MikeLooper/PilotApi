@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
-using PilotApi.Domain.Contracts.DataStore;
-using PilotApi.Domain.Contracts.Entities;
-using PilotApi.Domain.Contracts.Repository;
-using PilotApi.Repositories.Base;
+using PilotApi.Domain.Contracts.DataSource;
+using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Models.Entities;
+using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Handlers;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -10,7 +11,7 @@ namespace PilotApi.Repositories.Repositories
 	/// <summary>
 	/// A repository for accessing and manipulating order details data in the data store.
 	/// </summary>
-	public class OrderDetailsRepository : RepositoryBase<IOrderDetailsEntity>, IOrderDetailsRepository
+	public class OrderDetailsRepository : RepositoryBase<OrderDetailsEntity>, IOrderDetailsRepository
 	{
 		/// <summary>
 		/// Instantiates a new instance of the <see cref="OrderDetailsRepository"/> class.
@@ -21,44 +22,58 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="dataStoreContext">
 		/// A data store context that provides access to the underlying data store for performing CRUD operations.
 		/// </param>
+		/// <param name="sqlBuilder">
+		/// A SQL builder object.
+		/// </param>
+		/// <remarks>
+		/// The source table contains a two-column key: ProductID, OrderID.
+		/// The KeyColumnNames property lists the two columns in that order.
+		/// So, the GetById and Delete methods must handle IDs in that order.
+		/// </remarks>
 		public OrderDetailsRepository(
 			ILoggerFactory loggerFactory,
-			IDataStoreContext dataStoreContext)
-			: base(loggerFactory, dataStoreContext)
+			IDataSourceContext dataStoreContext,
+			ISqlBuilder sqlBuilder)
+			: base(loggerFactory, dataStoreContext, sqlBuilder)
 		{
+			this.KeyIsAutoIncrement = false;
 		}
 
-		/// <inheritdoc/>>
+		/// <inheritdoc/>
 		protected override List<string> ColumnNames
 		{
 			get
 			{
 				return new List<string>
 				{
-					"OrderID",
-					"ProductID",
-					"UnitPrice",
-					"Quantity",
-					"Discount"
+					"[Discount]",
+					"[OrderID]",
+					"[ProductID]",
+					"[Quantity]",
+					"[UnitPrice]"
 				};
 			}
 		}
 
-		/// <inheritdoc/>>
-		protected override string KeyColumnName
+		/// <inheritdoc/>
+		protected override List<string> KeyColumnNames
 		{
 			get
 			{
-				return "OrderID, ProductID";
+				return new List<string>
+				{
+					"[ProductID]",
+					"[OrderID]"
+				};
 			}
 		}
 
-		/// <inheritdoc/>>
+		/// <inheritdoc/>
 		protected override string TableName
 		{
 			get
 			{
-				return "OrderDetails";
+				return "[dbo].[Order Details]";
 			}
 		}
 	}

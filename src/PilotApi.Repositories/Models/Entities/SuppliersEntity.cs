@@ -24,7 +24,7 @@ namespace PilotApi.Repositories.Models.Entities
 		/// <summary>
 		/// Gets or sets the name of the company associated with the supplier.
 		/// </summary>
-		public string CompanyName { get; set; }
+		public string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the name of the contact person for the supplier.
@@ -71,5 +71,22 @@ namespace PilotApi.Repositories.Models.Entities
 		/// </summary>
 		[Key]
 		public int SupplierID { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Address)}={this.Address}, " +
+				$"{nameof(this.City)}={this.City}, " +
+				$"{nameof(this.CompanyName)}={this.CompanyName}, " +
+				$"{nameof(this.ContactName)}={this.ContactName}, " +
+				$"{nameof(this.ContactTitle)}={this.ContactTitle}, " +
+				$"{nameof(this.Country)}={this.Country}, " +
+				$"{nameof(this.Fax)}={this.Fax}, " +
+				$"{nameof(this.HomePage)}={this.HomePage}, " +
+				$"{nameof(this.Phone)}={this.Phone}, " +
+				$"{nameof(this.PostalCode)}={this.PostalCode}, " +
+				$"{nameof(this.Region)}={this.Region}, " +
+				$"{nameof(this.SupplierID)}={this.SupplierID}";
+		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using PilotApi.Domain.Contracts.Base;
+using PilotApi.Domain.Contracts.Entities.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,10 +13,10 @@ namespace PilotApi.Services.Contracts
 		/// <summary>
 		/// Maps a list of entity models to a list of data transfer objects (DTOs).
 		/// </summary>
-		/// <typeparam name="Dto">
+		/// <typeparam name="TDto">
 		/// A type that implements the IDtoBase interface, representing the data transfer object.
 		/// </typeparam>
-		/// <typeparam name="Entity">
+		/// <typeparam name="TEntity">
 		/// A type that implements the IEntityBase interface, representing the entity model.
 		/// </typeparam>
 		/// <param name="entities">
@@ -29,10 +30,10 @@ namespace PilotApi.Services.Contracts
 		/// <summary>
 		/// Maps a single entity model to a data transfer object (DTO).
 		/// </summary>
-		/// <typeparam name="Dto">
+		/// <typeparam name="TDto">
 		/// A type that implements the IDtoBase interface, representing the data transfer object.
 		/// </typeparam>
-		/// <typeparam name="Entity">
+		/// <typeparam name="TEntity">
 		/// A type that implements the IEntityBase interface, representing the entity model.
 		/// </typeparam>
 		/// <param name="entity">
@@ -46,10 +47,10 @@ namespace PilotApi.Services.Contracts
 		/// <summary>
 		/// Maps a single data transfer object (DTO) to an entity model.
 		/// </summary>
-		/// <typeparam name="Dto">
+		/// <typeparam name="TDto">
 		/// A type that implements the IDtoBase interface, representing the data transfer object.
 		/// </typeparam>
-		/// <typeparam name="Entity">
+		/// <typeparam name="TEntity">
 		/// A type that implements the IEntityBase interface, representing the entity model.
 		/// </typeparam>
 		/// <param name="dto">

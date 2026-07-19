@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 
 namespace PilotApi.Domain.Contracts.Entities
 {
@@ -15,7 +15,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the name of the category.
 		/// </summary>
-		string CategoryName { get; set; }
+		string? CategoryName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the description of the category.
@@ -25,6 +25,6 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the picture of the category as a byte array.
 		/// </summary>
-		byte[] Picture { get; set; }
+		byte[]? Picture { get; set; }
 	}
 }

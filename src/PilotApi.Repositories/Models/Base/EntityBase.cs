@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 
 namespace PilotApi.Repositories.Models.Base
 {

@@ -12,7 +12,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the name of the shipping company.
 		/// </summary>
 		[Required]
-		public string CompanyName { get; set; }
+		public string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the phone number of the shipping company.
@@ -24,5 +24,13 @@ namespace PilotApi.Domain.Models.Dto
 		/// </summary>
 		[Required]
 		public int ShipperID { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.CompanyName)}={this.CompanyName}, " +
+				$"{nameof(this.Phone)}={this.Phone}, " +
+				$"{nameof(this.ShipperID)}={this.ShipperID}";
+		}
 	}
 }

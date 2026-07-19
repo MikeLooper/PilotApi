@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
-using PilotApi.Domain.Contracts.DataStore;
-using PilotApi.Domain.Contracts.Entities;
-using PilotApi.Domain.Contracts.Repository;
-using PilotApi.Repositories.Base;
+using PilotApi.Domain.Contracts.DataSource;
+using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Models.Entities;
+using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Handlers;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -10,7 +11,7 @@ namespace PilotApi.Repositories.Repositories
 	/// <summary>
 	/// A repository for accessing and manipulating supplier data in the data store.
 	/// </summary>
-	public class SuppliersRepository : RepositoryBase<ISuppliersEntity>, ISuppliersRepository
+	public class SuppliersRepository : RepositoryBase<SuppliersEntity>, ISuppliersRepository
 	{
 		/// <summary>
 		/// Instantiates a new instance of the <see cref="SuppliersRepository"/> class.
@@ -21,10 +22,14 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="dataStoreContext">
 		/// A data store context that provides access to the underlying data store for performing CRUD operations.
 		/// </param>
+		/// <param name="sqlBuilder">
+		/// A SQL builder object.
+		/// </param>
 		public SuppliersRepository(
 			ILoggerFactory loggerFactory,
-			IDataStoreContext dataStoreContext)
-			: base(loggerFactory, dataStoreContext)
+			IDataSourceContext dataStoreContext,
+			ISqlBuilder sqlBuilder)
+			: base(loggerFactory, dataStoreContext, sqlBuilder)
 		{
 		}
 
@@ -35,28 +40,31 @@ namespace PilotApi.Repositories.Repositories
 			{
 				return new List<string>
 				{
-					"SupplierID",
-					"CompanyName",
-					"ContactName",
-					"ContactTitle",
-					"Address",
-					"City",
-					"Region",
-					"PostalCode",
-					"Country",
-					"Phone",
-					"Fax",
-					"HomePage"
+					"[Address]",
+					"[City]",
+					"[CompanyName]",
+					"[ContactName]",
+					"[ContactTitle]",
+					"[Country]",
+					"[Fax]",
+					"[HomePage]",
+					"[Phone]",
+					"[PostalCode]",
+					"[Region]",
+					"[SupplierID]"
 				};
 			}
 		}
 
 		/// <inheritdoc/>>
-		protected override string KeyColumnName
+		protected override List<string> KeyColumnNames
 		{
 			get
 			{
-				return "SupplierID";
+				return new List<string>
+				{
+					"[SupplierID]"
+				};
 			}
 		}
 
@@ -65,7 +73,7 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return "Suppliers";
+				return "[dbo].[Suppliers]";
 			}
 		}
 	}

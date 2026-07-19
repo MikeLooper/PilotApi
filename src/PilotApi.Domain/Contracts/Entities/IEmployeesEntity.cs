@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 using System;
 
 namespace PilotApi.Domain.Contracts.Entities
@@ -41,7 +41,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the first name of the employee.
 		/// </summary>
-		string FirstName { get; set; }
+		string? FirstName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the 
@@ -57,7 +57,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the last name of the employee.
 		/// </summary>
-		string LastName { get; set; }
+		string? LastName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the notes about the employee.
@@ -67,7 +67,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the photo of the employee as a byte array.
 		/// </summary>
-		byte[] Photo { get; set; }
+		byte[]? Photo { get; set; }
 
 		/// <summary>
 		/// Gets or sets the path to the photo of the employee.

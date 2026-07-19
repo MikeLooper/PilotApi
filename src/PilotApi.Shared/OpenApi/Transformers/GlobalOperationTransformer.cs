@@ -16,14 +16,18 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
 		{
 			// remove query parameter
-			var versionParameter = operation.Parameters
-						.FirstOrDefault(p => p.Name.Equals("api-version", StringComparison.OrdinalIgnoreCase));
-
-			if (versionParameter != null)
+			if (operation.Parameters != null)
 			{
-				operation.Parameters.Remove(versionParameter);
-			}
+				var versionParameter = operation.Parameters
+							.FirstOrDefault(p =>
+										!string.IsNullOrWhiteSpace(p.Name) &&
+										p.Name.Equals("api-version", StringComparison.OrdinalIgnoreCase));
 
+				if (versionParameter != null)
+				{
+					operation.Parameters.Remove(versionParameter);
+				}
+			}
 			return;
 		}
 	}

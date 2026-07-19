@@ -22,7 +22,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the company name of the customer.
 		/// </summary>
 		[Required]
-		public string CompanyName { get; set; }
+		public string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the contact name of the customer.
@@ -43,7 +43,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the unique identifier of the customer.
 		/// </summary>
 		[Required]
-		public string CustomerID { get; set; }
+		public string? CustomerID { get; set; }
 
 		/// <summary>
 		/// Gets or sets the fax number of the customer.
@@ -64,5 +64,21 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the region of the customer.
 		/// </summary>
 		public string? Region { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Address)}={this.Address}, " +
+				$"{nameof(this.City)}={this.City}, " +
+				$"{nameof(this.CompanyName)}={this.CompanyName}, " +
+				$"{nameof(this.ContactName)}={this.ContactName}, " +
+				$"{nameof(this.ContactTitle)}={this.ContactTitle}, " +
+				$"{nameof(this.Country)}={this.Country}, " +
+				$"{nameof(this.CustomerID)}={this.CustomerID}, " +
+				$"{nameof(this.Fax)}={this.Fax}, " +
+				$"{nameof(this.Phone)}={this.Phone}, " +
+				$"{nameof(this.PostalCode)}={this.PostalCode}, " +
+				$"{nameof(this.Region)}={this.Region}";
+		}
 	}
 }

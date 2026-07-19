@@ -23,7 +23,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the company name of the supplier.
 		/// </summary>
 		[Required]
-		public string CompanyName { get; set; }
+		public string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the contact name of the supplier.
@@ -70,5 +70,22 @@ namespace PilotApi.Domain.Models.Dto
 		/// </summary>
 		[Required]
 		public int SupplierID { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Address)}={this.Address}, " +
+				$"{nameof(this.City)}={this.City}, " +
+				$"{nameof(this.CompanyName)}={this.CompanyName}, " +
+				$"{nameof(this.ContactName)}={this.ContactName}, " +
+				$"{nameof(this.ContactTitle)}={this.ContactTitle}, " +
+				$"{nameof(this.Country)}={this.Country}, " +
+				$"{nameof(this.Fax)}={this.Fax}, " +
+				$"{nameof(this.HomePage)}={this.HomePage}, " +
+				$"{nameof(this.Phone)}={this.Phone}, " +
+				$"{nameof(this.PostalCode)}={this.PostalCode}, " +
+				$"{nameof(this.Region)}={this.Region}, " +
+				$"{nameof(this.SupplierID)}={this.SupplierID}";
+		}
 	}
 }

@@ -50,8 +50,11 @@ namespace PilotApi.Shared.OpenApi.Extensions
 
 				// transformers
 				options.AddOperationTransformer<GlobalOperationTransformer>();
+				options.AddDocumentTransformer<DocumentInfoTransformer>();
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 				var xmlFilename = $"{Assembly.GetEntryAssembly().GetName().Name}.xml";
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 				var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
 				options.AddOperationTransformer(new ManualXmlCommentsOperationTransformer(xmlPath));
 			});

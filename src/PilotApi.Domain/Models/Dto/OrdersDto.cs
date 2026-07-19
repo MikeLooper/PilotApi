@@ -1,7 +1,6 @@
 ﻿using PilotApi.Domain.Contracts.Base;
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PilotApi.Domain.Models.Dto
 {
@@ -80,5 +79,24 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the identifier of the shipper used for the order.
 		/// </summary>
 		public int? ShipVia { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.CustomerID)}={this.CustomerID}, " +
+				$"{nameof(this.EmployeeID)}={this.EmployeeID}, " +
+				$"{nameof(this.Freight)}={this.Freight}, " +
+				$"{nameof(this.OrderDate)}={this.OrderDate}, " +
+				$"{nameof(this.OrderID)}={this.OrderID}, " +
+				$"{nameof(this.RequiredDate)}={this.RequiredDate}, " +
+				$"{nameof(this.ShipAddress)}={this.ShipAddress}, " +
+				$"{nameof(this.ShipCity)}={this.ShipCity}, " +
+				$"{nameof(this.ShipCountry)}={this.ShipCountry}, " +
+				$"{nameof(this.ShipName)}={this.ShipName}, " +
+				$"{nameof(this.ShippedDate)}={this.ShippedDate}, " +
+				$"{nameof(this.ShipPostalCode)}={this.ShipPostalCode}, " +
+				$"{nameof(this.ShipRegion)}={this.ShipRegion}, " +
+				$"{nameof(this.ShipVia)}={this.ShipVia}";
+		}
 	}
 }

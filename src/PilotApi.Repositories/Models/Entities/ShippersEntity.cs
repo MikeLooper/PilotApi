@@ -13,7 +13,7 @@ namespace PilotApi.Repositories.Models.Base
 		/// <summary>
 		/// Gets or sets the name of the shipping company.
 		/// </summary>
-		public string CompanyName { get; set; }
+		public string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the phone number of the shipping company.
@@ -25,5 +25,13 @@ namespace PilotApi.Repositories.Models.Base
 		/// </summary>
 		[Key]
 		public int ShipperID { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.CompanyName)}={this.CompanyName}, " +
+				$"{nameof(this.Phone)}={this.Phone}, " +
+				$"{nameof(this.ShipperID)}={this.ShipperID}";
+		}
 	}
 }

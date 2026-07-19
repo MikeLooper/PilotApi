@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 
 namespace PilotApi.Domain.Contracts.Entities
 {
@@ -10,7 +10,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the name of the shipping company.
 		/// </summary>
-		string CompanyName { get; set; }
+		string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the phone number of the shipping company.

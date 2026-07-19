@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PilotApi.Domain.Contracts.Services;
 using PilotApi.Domain.Models.Dto;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -15,7 +14,7 @@ namespace PilotApi.Web.Controllers
 	/// A contrller for accessing and manipulating Categories data in the data store.
 	/// </summary>
 	[ApiVersion("1.0")]
-	[Route("Categories")]
+	[Route("categories")]
 
 	public class CategoriesController : SimpleControllerBase
 	{
@@ -36,14 +35,14 @@ namespace PilotApi.Web.Controllers
 		protected ICategoriesService Service { get; }
 
 		/// <summary>
-		/// Gets all DTO objects of the given type.
+		/// Gets all DTO objects from the category table.
 		/// </summary>
 		/// <returns>
-		/// A read only list of all DTO objects of the given type, or null if no objects exist.
+		/// A read only list of all DTO objects from the category table, or null if no objects exist.
 		/// </returns>
 		[HttpGet]
 		[Route("get-all")]
-		[ProducesResponseType<IList<CategoriesDto>>(StatusCodes.Status200OK)]
+		[ProducesResponseType<List<CategoriesDto>>(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetAll()
 		{
 			var result = await this.Service.GetAllAsync();
@@ -56,21 +55,21 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Gets a DTO object of the given type by its ID.
+		/// Gets a category record by its ID.
 		/// </summary>
-		/// <param name="id">
-		/// The ID of the DTO object to retrieve.
+		/// <param name="categoryId">
+		/// The ID of the category record to retrieve.
 		/// </param>
 		/// <returns>
-		/// A DTO object of the given type with the specified ID, or null if no such object exists.
+		/// A DTO object of the category record with the specified ID, or null if no such object exists.
 		/// </returns>
 		[HttpGet]
-		[Route("get/{id:int}")]
+		[Route("get/{categoryId}")]
 		[ProducesResponseType<CategoriesDto>(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetById(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int categoryId)
 		{
-			var result = await this.Service.GetByIdAsync(id);
+			var result = await this.Service.GetByIdAsync(categoryId);
 			if (result == null)
 			{
 				return this.NotFound();
@@ -80,10 +79,10 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Adds a new DTO object of the given type.
+		/// Adds a new DTO object of a category record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to add.
+		/// A DTO object of the category record to add.
 		/// </param>
 		/// <returns>
 		/// </returns>
@@ -99,18 +98,18 @@ namespace PilotApi.Web.Controllers
 				return this.BadRequest();
 			}
 
-			return this.Ok();
+			return this.Ok(new AddResponse(result));
 		}
 
 		/// <summary>
-		/// Updates an existing DTO object of the given type.
+		/// Updates an existing DTO object of a category record.
 		/// </summary>
 		/// <param name="model">
-		/// A DTO object of the given type to update.
+		/// A DTO object of the category record to update.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
+		[HttpPut]
 		[Route("update")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -128,21 +127,21 @@ namespace PilotApi.Web.Controllers
 		}
 
 		/// <summary>
-		/// Deletes a DTO object of the given type by its ID.
+		/// Deletes a DTO object of a category record by its ID.
 		/// </summary>
-		/// <param name="id">
-		/// An integer representing the ID of the DTO object to delete.
+		/// <param name="categoryId">
+		/// An integer representing the ID of the category record to delete.
 		/// </param>
 		/// <returns>
 		/// </returns>
-		[HttpPost]
-		[Route("delete/{id:int}")]
+		[HttpDelete]
+		[Route("delete/{categoryId}")]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<IActionResult> Delete(
-			[Required][FromRoute] int id)
+			[Required][FromRoute] int categoryId)
 		{
-			var result = await this.Service.DeleteAsync(id);
+			var result = await this.Service.DeleteAsync(categoryId);
 			if (!result)
 			{
 				this.Response.Headers["Warning"] = "Delete attempt failed in the database";

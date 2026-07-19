@@ -29,7 +29,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the name of the product.
 		/// </summary>
 		[Required]
-		public string ProductName { get; set; }
+		public string? ProductName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the quantity of the product per unit.
@@ -60,5 +60,20 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the number of units on order for the product.
 		/// </summary>
 		public short UnitsOnOrder { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.CategoryID)}={this.CategoryID}, " +
+				$"{nameof(this.Discontinued)}={this.Discontinued}, " +
+				$"{nameof(this.ProductID)}={this.ProductID}, " +
+				$"{nameof(this.ProductName)}={this.ProductName}, " +
+				$"{nameof(this.QuantityPerUnit)}={this.QuantityPerUnit}, " +
+				$"{nameof(this.ReorderLevel)}={this.ReorderLevel}, " +
+				$"{nameof(this.SupplierID)}={this.SupplierID}, " +
+				$"{nameof(this.UnitPrice)}={this.UnitPrice}, " +
+				$"{nameof(this.UnitsInStock)}={this.UnitsInStock}, " +
+				$"{nameof(this.UnitsOnOrder)}={this.UnitsOnOrder}";
+		}
 	}
 }

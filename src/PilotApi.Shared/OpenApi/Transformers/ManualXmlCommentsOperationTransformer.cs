@@ -18,7 +18,7 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		/// <summary>
 		/// An XML document.
 		/// </summary>
-		private readonly XDocument _xmlDoc;
+		protected readonly XDocument _xmlDoc;
 
 		/// <summary>
 		/// Instantiate a <see cref="ManualXmlCommentsOperationTransformer"/> object.
@@ -35,7 +35,7 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
 		{
 			// Safely pull the ActionDescriptor to access the underlying controller/minimal API method info
-			MethodInfo methodInfo = null;
+			MethodInfo? methodInfo = null;
 			if (context.Description.ActionDescriptor is ControllerActionDescriptor cad)
 			{
 				methodInfo = cad.MethodInfo;
@@ -78,7 +78,7 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		/// </summary>
 		/// <param name="methodInfo"></param>
 		/// <returns></returns>
-		private static string GetXmlMemberKey(MethodInfo methodInfo)
+		protected static string GetXmlMemberKey(MethodInfo methodInfo)
 		{
 			var typeName = methodInfo.DeclaringType?.FullName?.Replace("+", ".");
 			var methodName = methodInfo.Name;

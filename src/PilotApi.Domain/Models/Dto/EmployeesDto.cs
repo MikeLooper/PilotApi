@@ -1,4 +1,5 @@
 ﻿using PilotApi.Domain.Contracts.Base;
+using PilotApi.Shared.Constants;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -44,7 +45,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the first name of the employee.
 		/// </summary>
 		[Required]
-		public string FirstName { get; set; }
+		public string? FirstName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the hire date of the employee.
@@ -60,7 +61,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the last name of the employee.
 		/// </summary>
 		[Required]
-		public string LastName { get; set; }
+		public string? LastName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the notes about the employee.
@@ -70,7 +71,7 @@ namespace PilotApi.Domain.Models.Dto
 		/// <summary>
 		/// Gets or sets the photo of the employee as a byte array.
 		/// </summary>
-		public byte[] Photo { get; set; }
+		public byte[]? Photo { get; set; }
 
 		/// <summary>
 		/// Gets or sets the path to the photo of the employee.
@@ -101,5 +102,28 @@ namespace PilotApi.Domain.Models.Dto
 		/// Gets or sets the title of courtesy for the employee (e.g., Mr., Mrs., Dr.).
 		/// </summary>
 		public string? TitleOfCourtesy { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Address)}={this.Address}, " +
+				$"{nameof(this.BirthDate)}={this.BirthDate}, " +
+				$"{nameof(this.City)}={this.City}, " +
+				$"{nameof(this.Country)}={this.Country}, " +
+				$"{nameof(this.EmployeeID)}={this.EmployeeID}, " +
+				$"{nameof(this.Extension)}={this.Extension}, " +
+				$"{nameof(this.FirstName)}={this.FirstName}, " +
+				$"{nameof(this.HireDate)}={this.HireDate}, " +
+				$"{nameof(this.HomePhone)}={this.HomePhone}, " +
+				$"{nameof(this.LastName)}={this.LastName}, " +
+				$"{nameof(this.Notes)}={this.Notes}, " +
+				$"{nameof(this.Photo)}={(this.Photo == null ? StringConstants.LogNull : StringConstants.HasContents)}, " +
+				$"{nameof(this.PhotoPath)}={this.PhotoPath}, " +
+				$"{nameof(this.PostalCode)}={this.PostalCode}, " +
+				$"{nameof(this.Region)}={this.Region}, " +
+				$"{nameof(this.ReportsTo)}={this.ReportsTo}, " +
+				$"{nameof(this.Title)}={this.Title}, " +
+				$"{nameof(this.TitleOfCourtesy)}={this.TitleOfCourtesy}";
+		}
 	}
 }

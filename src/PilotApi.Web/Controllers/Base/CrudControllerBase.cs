@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PilotApi.Domain.Contracts.Base;
+using PilotApi.Domain.Contracts.Services.Base;
 using PilotApi.Domain.Models.Dto;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;

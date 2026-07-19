@@ -38,5 +38,15 @@ namespace PilotApi.Domain.Models.Dto
 		/// </summary>
 		[Required]
 		public decimal UnitPrice { get; set; }
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.Discount)}={this.Discount}, " +
+				$"{nameof(this.OrderID)}={this.OrderID}, " +
+				$"{nameof(this.ProductID)}={this.ProductID}, " +
+				$"{nameof(this.Quantity)}={this.Quantity}, " +
+				$"{nameof(this.UnitPrice)}={this.UnitPrice}";
+		}
 	}
 }

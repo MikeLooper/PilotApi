@@ -1,4 +1,4 @@
-﻿using PilotApi.Domain.Contracts.Base;
+﻿using PilotApi.Domain.Contracts.Entities.Base;
 
 namespace PilotApi.Domain.Contracts.Entities
 {
@@ -20,7 +20,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the company name of the customer.
 		/// </summary>
-		string CompanyName { get; set; }
+		string? CompanyName { get; set; }
 
 		/// <summary>
 		/// Gets or sets the contact name of the customer.
@@ -40,7 +40,7 @@ namespace PilotApi.Domain.Contracts.Entities
 		/// <summary>
 		/// Gets or sets the customer ID of the customer.
 		/// </summary>
-		string CustomerID { get; set; }
+		string? CustomerID { get; set; }
 
 		/// <summary>
 		/// Gets or sets the fax number of the customer.

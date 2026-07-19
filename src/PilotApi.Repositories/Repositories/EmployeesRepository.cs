@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
-using PilotApi.Domain.Contracts.DataStore;
-using PilotApi.Domain.Contracts.Entities;
-using PilotApi.Domain.Contracts.Repository;
-using PilotApi.Repositories.Base;
+using PilotApi.Domain.Contracts.DataSource;
+using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Models.Entities;
+using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Handlers;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -10,7 +11,7 @@ namespace PilotApi.Repositories.Repositories
 	/// <summary>
 	/// A repository for accessing and manipulating employee data in the data store.
 	/// </summary>
-	public class EmployeesRepository : RepositoryBase<IEmployeesEntity>, IEmployeesRepository
+	public class EmployeesRepository : RepositoryBase<EmployeesEntity>, IEmployeesRepository
 	{
 		/// <summary>
 		/// Instantiates a new instance of the <see cref="EmployeesRepository"/> class.
@@ -21,10 +22,14 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="dataStoreContext">
 		/// A data store context that provides access to the underlying data store for performing CRUD operations.
 		/// </param>
+		/// <param name="sqlBuilder">
+		/// A SQL builder object.
+		/// </param>
 		public EmployeesRepository(
 			ILoggerFactory loggerFactory,
-			IDataStoreContext dataStoreContext)
-			: base(loggerFactory, dataStoreContext)
+			IDataSourceContext dataStoreContext,
+			ISqlBuilder sqlBuilder)
+			: base(loggerFactory, dataStoreContext, sqlBuilder)
 		{
 		}
 
@@ -35,34 +40,37 @@ namespace PilotApi.Repositories.Repositories
 			{
 				return new List<string>
 				{
-					"EmployeeID",
-					"LastName",
-					"FirstName",
-					"Title",
-					"TitleOfCourtesy",
-					"BirthDate",
-					"HireDate",
-					"Address",
-					"City", 
-					"Region",
-					"PostalCode",
-					"Country",
-					"HomePhone",
-					"Extension",
-					"Photo",
-					"Notes",
-					"ReportsTo",
-					"PhotoPath"
+					"[Address]",
+					"[BirthDate]",
+					"[City]",
+					"[Country]",
+					"[EmployeeID]",
+					"[Extension]",
+					"[FirstName]",
+					"[HireDate]",
+					"[HomePhone]",
+					"[LastName]",
+					"[Notes]",
+					"[Photo]",
+					"[PhotoPath]",
+					"[PostalCode]",
+					"[Region]",
+					"[ReportsTo]",
+					"[Title]",
+					"[TitleOfCourtesy]"
 				};
 			}
 		}
 
 		/// <inheritdoc/>>
-		protected override string KeyColumnName
+		protected override List<string> KeyColumnNames
 		{
 			get
 			{
-				return "EmployeeID";
+				return new List<string>
+				{
+					"[EmployeeID]"
+				};
 			}
 		}
 
@@ -71,7 +79,7 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return "Employees";
+				return "[dbo].[Employees]";
 			}
 		}
 	}
