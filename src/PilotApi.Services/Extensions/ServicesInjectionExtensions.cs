@@ -2,17 +2,19 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using PilotApi.Domain.Contracts.Configuration;
-using PilotApi.Domain.Contracts.DataStore;
-using PilotApi.Domain.Contracts.Repository;
+using PilotApi.Domain.Contracts.DataSource;
 using PilotApi.Domain.Contracts.Services;
 using PilotApi.Domain.Models.Dto;
+using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.DataSource;
 using PilotApi.Repositories.Repositories;
 using PilotApi.Services.Contracts;
-using PilotApi.Services.DataStore;
 using PilotApi.Services.Handlers;
-using PilotApi.Services.Serices;
+using PilotApi.Services.Services;
+using PilotApi.Shared.Configuration;
+using PilotApi.Shared.Contracts.Configuration;
 using System;
+using System.Collections.Generic;
 
 namespace PilotApi.Services.Extensions
 {
@@ -52,8 +54,8 @@ namespace PilotApi.Services.Extensions
 			builder.Services.AddSingleton<IApplicationConfiguration>(applicationSettings);
 
 			// register services
-			builder.Services.AddSingleton<IDataStoreContext, DataStoreContext>();
-			builder.Services.AddSingleton<IDataMapperHandler, DataMapperHandler>();
+			builder.Services.AddTransient<IDataSourceContext, DataSourceContext>();
+			builder.Services.AddTransient<IDataMapperHandler, DataMapperHandler>();
 
 			builder.Services.AddTransient<ICategoriesRepository, CategoriesRepository>();
 			builder.Services.AddTransient<ICustomersRepository, CustomersRepository>();
