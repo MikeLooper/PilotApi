@@ -504,6 +504,12 @@ namespace PilotApi.Shared.Handlers
 		/// </param>
 		protected virtual void Initialize(IApplicationConfiguration applicationConfiguration)
 		{
+			if (applicationConfiguration == null)
+			{
+				throw new ConfigurationException(
+					$"The {nameof(applicationConfiguration)} argument cannot be null ({this.GetType().Name})");
+			}
+
 			this.DataConnectionConfiguration = applicationConfiguration.DataConnections
 				.First(f => f.Active);
 
@@ -515,6 +521,13 @@ namespace PilotApi.Shared.Handlers
 			}
 
 			this.DataSourceConfiguration = applicationConfiguration.GetDataSource(this.DataConnectionConfiguration.DataSourceName);
+
+			if (this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.Unrecognized &&
+				!string.IsNullOrWhiteSpace(this.DataSourceConfiguration.DataSourceType))
+			{
+				this.DataSourceConfiguration.DataSourceEnum = DataSourceUtilities.ResolveDataSources(this.DataSourceConfiguration.DataSourceType);
+			}
+
 			this.IsPostgreSQL = this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.PostgreSQL;
 			this.IsSqlServer = this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.SqlServer;
 		}

@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 namespace PilotApi.Domain.Tests
 {
@@ -6,7 +6,7 @@ namespace PilotApi.Domain.Tests
 	public class ExampleClassTest : TestBase
 	{
 		[Test]
-		public void ExampleTest()
+		public void ExampleClass_ExampleTest_Test()
 		{
 			//// Assert and Is are native NUnit assertion constraints
 			//Assert.That(SharedTestResource, Is.EqualTo("Initialized Data"));

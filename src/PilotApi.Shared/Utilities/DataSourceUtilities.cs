@@ -23,6 +23,16 @@ namespace PilotApi.Shared.Utilities
 		/// </returns>
 		public static string DelimitName(string sourceName, DataSourceTypes datasourceType)
 		{
+			if (string.IsNullOrWhiteSpace(sourceName))
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(sourceName)} ({nameof(DataSourceUtilities)})");
+			}
+
+			if (datasourceType == DataSourceTypes.Unrecognized)
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(datasourceType)} ({nameof(DataSourceUtilities)})");
+			}
+
 			if (!string.IsNullOrWhiteSpace(sourceName))
 			{
 				switch (datasourceType)
@@ -73,10 +83,19 @@ namespace PilotApi.Shared.Utilities
 		/// </returns>
 		public static List<string> DelimitNames(List<string> sourceNames, DataSourceTypes datasourceType)
 		{
+			if (sourceNames == null)
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(sourceNames)} ({nameof(DataSourceUtilities)})");
+			}
+
+			if (datasourceType == DataSourceTypes.Unrecognized)
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(datasourceType)} ({nameof(DataSourceUtilities)})");
+			}
+
 			List<string> cleanedList = new List<string>();
 
-			if (sourceNames != null &&
-				sourceNames.Count > 0)
+			if (sourceNames.Count > 0)
 			{
 				foreach (var column in sourceNames)
 				{
@@ -115,6 +134,11 @@ namespace PilotApi.Shared.Utilities
 		/// </returns>
 		public static string MinimizeName(string sourceName)
 		{
+			if (string.IsNullOrWhiteSpace(sourceName))
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(sourceName)} ({nameof(DataSourceUtilities)})");
+			}
+
 			if (!string.IsNullOrWhiteSpace(sourceName))
 			{
 				sourceName = sourceName
@@ -137,10 +161,14 @@ namespace PilotApi.Shared.Utilities
 		/// </returns>
 		public static List<string> MinimizeNames(List<string> sourceColumns)
 		{
+			if (sourceColumns == null)
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(sourceColumns)} ({nameof(DataSourceUtilities)})");
+			}
+
 			List<string> cleanedList = new List<string>();
 
-			if (sourceColumns != null &&
-				sourceColumns.Count > 0)
+			if (sourceColumns.Count > 0)
 			{
 				foreach (var column in sourceColumns)
 				{
@@ -162,6 +190,11 @@ namespace PilotApi.Shared.Utilities
 		/// </returns>
 		public static DataSourceTypes ResolveDataSources(string dataSourceType)
 		{
+			if (string.IsNullOrWhiteSpace(dataSourceType))
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(dataSourceType)} ({nameof(DataSourceUtilities)})");
+			}
+
 			var returnDataSources = DataSourceTypes.Unrecognized;
 			if (dataSourceType.Equals("PostgreSQL", System.StringComparison.OrdinalIgnoreCase))
 			{

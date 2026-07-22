@@ -57,9 +57,8 @@ namespace PilotApi.Shared.Configuration
 			if (this.DataConnections == null ||
 				this.DataConnections.Count == 0)
 			{
-				exceptions.Add(
-					new ConfigurationException(
-						$"The {nameof(this.DataConnections)} property is required and cannot be null or empty ({this.GetType().Name})"));
+				throw new ConfigurationException(
+					$"The {nameof(this.DataConnections)} property is required and cannot be null or empty ({this.GetType().Name})");
 			}
 			else
 			{
@@ -73,9 +72,8 @@ namespace PilotApi.Shared.Configuration
 					.Count();
 				if (activeCount != 1)
 				{
-					exceptions.Add(
-						new ConfigurationException(
-							$"The {nameof(this.DataConnections)} property should have one active item ({this.GetType().Name})"));
+					throw new ConfigurationException(
+						$"The {nameof(this.DataConnections)} property should have one active item ({this.GetType().Name})");
 				}
 			}
 
