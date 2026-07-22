@@ -1,9 +1,12 @@
 using Microsoft.Extensions.Logging;
 using PilotApi.Domain.Contracts.DataSource;
 using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Handlers;
 using PilotApi.Repositories.Models.Entities;
 using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Constants;
 using PilotApi.Shared.Handlers;
+using System;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -25,11 +28,15 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="sqlBuilder">
 		/// A SQL builder object.
 		/// </param>
+		/// <param name="entityUpdateHandler">
+		/// An entity update handler object.
+		/// </param>
 		public ProductsRepository(
 			ILoggerFactory loggerFactory,
 			IDataSourceContext dataStoreContext,
-			ISqlBuilder sqlBuilder)
-			: base(loggerFactory, dataStoreContext, sqlBuilder)
+			ISqlBuilder sqlBuilder,
+			IEntityUpdateHandler entityUpdateHandler)
+			: base(loggerFactory, dataStoreContext, sqlBuilder, entityUpdateHandler)
 		{
 		}
 
@@ -38,19 +45,70 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[CategoryID]",
-					"[Discontinued]",
-					"[ProductID]",
-					"[ProductName]",
-					"[QuantityPerUnit]",
-					"[ReorderLevel]",
-					"[SupplierID]",
-					"[UnitPrice]",
-					"[UnitsInStock]",
-					"[UnitsOnOrder]"
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"CategoryID",
+							"Discontinued",
+							"ProductID",
+							"ProductName",
+							"QuantityPerUnit",
+							"ReorderLevel",
+							"SupplierID",
+							"UnitPrice",
+							"UnitsInStock",
+							"UnitsOnOrder"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"categoryid",
+							"discontinued",
+							"productid",
+							"productname",
+							"quantityperunit",
+							"reorderlevel",
+							"supplierid",
+							"unitprice",
+							"unitsinstock",
+							"unitsonorder"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
+			}
+		}
+
+		/// <inheritdoc/>>
+		protected override List<string> EntityColumns
+		{
+			get
+			{
+				List<string>? propertiesList = new List<string>
+				{
+					nameof(ProductsEntity.CategoryID),
+					nameof(ProductsEntity.Discontinued),
+					nameof(ProductsEntity.ProductID),
+					nameof(ProductsEntity.ProductName),
+					nameof(ProductsEntity.QuantityPerUnit),
+					nameof(ProductsEntity.ReorderLevel),
+					nameof(ProductsEntity.SupplierID),
+					nameof(ProductsEntity.UnitPrice),
+					nameof(ProductsEntity.UnitsInStock),
+					nameof(ProductsEntity.UnitsOnOrder)
 				};
+
+				return propertiesList;
 			}
 		}
 
@@ -59,10 +117,29 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[ProductID]"
-				};
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"ProductID"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"productid"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
 			}
 		}
 
@@ -71,7 +148,23 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return "[dbo].[Products]";
+				string? tablename = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
+				{
+					case DataSourceTypes.SqlServer:
+						tablename = "Products";
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						tablename = "products";
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return tablename;
 			}
 		}
 	}

@@ -26,11 +26,6 @@ http:
 
 runtime:
   scripts:
-    - type: after-response
-      code: |-
-        // Example: Storing an extracted token or ID from a JSON response
-        const jsonData = req.getBody();
-        bru.setVar("newId", jsonData.customerID);
     - type: tests
       code: |-
         test("should return success", function () {

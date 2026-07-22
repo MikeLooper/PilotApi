@@ -45,13 +45,21 @@ namespace PilotApi.Web.Controllers
 		[ProducesResponseType<IList<OrderDetailsDto>>(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetAll()
 		{
-			var result = await this.Service.GetAllAsync();
-			if (result == null)
+			var retrieveResponse = await this.Service.GetAllAsync();
+			if (retrieveResponse.IsError)
+			{
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
+			}
+
+			if (retrieveResponse.Result == null)
 			{
 				return this.NotFound();
 			}
 
-			return this.Ok(result.ToList().AsReadOnly());
+			return this.Ok(retrieveResponse.Result
+				.ToList()
+				.AsReadOnly());
 		}
 
 		/// <summary>
@@ -73,13 +81,19 @@ namespace PilotApi.Web.Controllers
 			[Required][FromRoute] int productId,
 			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.GetByIdAsync(productId, orderId);
-			if (result == null)
+			var retrieveResponse = await this.Service.GetByIdAsync(productId, orderId);
+			if (retrieveResponse.IsError)
+			{
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
+			}
+
+			if (retrieveResponse.Result == null)
 			{
 				return this.NotFound();
 			}
 
-			return this.Ok(result);
+			return this.Ok(retrieveResponse.Result);
 		}
 
 		/// <summary>
@@ -92,17 +106,23 @@ namespace PilotApi.Web.Controllers
 		/// </returns>
 		[HttpPost]
 		[Route("add")]
-		[ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
+		[ProducesResponseType<AddResponseInt>(StatusCodes.Status200OK)]
 		public async Task<IActionResult> Add(
 			[Required][FromBody] OrderDetailsDto model)
 		{
-			var result = await this.Service.InsertAsync(model);
-			if (result <= 0)
+			var retrieveResponse = await this.Service.InsertAsync<int>(model);
+			if (retrieveResponse.IsError)
+			{
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
+			}
+
+			if (retrieveResponse.Result <= 0)
 			{
 				return this.BadRequest();
 			}
 
-			return this.Ok(new AddResponse(result));
+			return this.Ok(new AddResponseInt(retrieveResponse.Result));
 		}
 
 		/// <summary>
@@ -120,10 +140,10 @@ namespace PilotApi.Web.Controllers
 		public async Task<IActionResult> Update(
 			[Required][FromBody] OrderDetailsDto model)
 		{
-			var result = await this.Service.UpdateAsync(model);
-			if (!result)
+			var retrieveResponse = await this.Service.UpdateAsync(model);
+			if (retrieveResponse.IsError)
 			{
-				this.Response.Headers["Warning"] = "Update attempt failed in the database";
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
 				return this.BadRequest();
 			}
 
@@ -149,10 +169,10 @@ namespace PilotApi.Web.Controllers
 			[Required][FromRoute] int productId,
 			[Required][FromRoute] int orderId)
 		{
-			var result = await this.Service.DeleteAsync(productId, orderId);
-			if (!result)
+			var retrieveResponse = await this.Service.DeleteAsync(productId, orderId);
+			if (retrieveResponse.IsError)
 			{
-				this.Response.Headers["Warning"] = "Delete attempt failed in the database";
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
 				return this.BadRequest();
 			}
 

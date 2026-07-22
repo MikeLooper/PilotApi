@@ -1,9 +1,12 @@
 using Microsoft.Extensions.Logging;
 using PilotApi.Domain.Contracts.DataSource;
 using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Handlers;
 using PilotApi.Repositories.Models.Entities;
 using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Constants;
 using PilotApi.Shared.Handlers;
+using System;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -25,13 +28,21 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="sqlBuilder">
 		/// A SQL builder object.
 		/// </param>
+		/// <param name="entityUpdateHandler">
+		/// An entity update handler object.
+		/// </param>
 		public CustomersRepository(
 			ILoggerFactory loggerFactory,
 			IDataSourceContext dataStoreContext,
-			ISqlBuilder sqlBuilder)
-			: base(loggerFactory, dataStoreContext, sqlBuilder)
+			ISqlBuilder sqlBuilder,
+			IEntityUpdateHandler entityUpdateHandler)
+			: base(loggerFactory, dataStoreContext, sqlBuilder, entityUpdateHandler)
 		{
 			this.KeyIsAutoIncrement = false;
+			this.KeyColumnDataTypes = new List<string>
+			{
+				KeyColumnDataTypeConstants.String
+			};
 		}
 
 		/// <inheritdoc/>>
@@ -39,20 +50,73 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[Address]",
-					"[City]",
-					"[CompanyName]",
-					"[ContactName]",
-					"[ContactTitle]",
-					"[Country]",
-					"[CustomerID]",
-					"[Fax]",
-					"[Phone]",
-					"[PostalCode]",
-					"[Region]"
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"Address",
+							"City",
+							"CompanyName",
+							"ContactName",
+							"ContactTitle",
+							"Country",
+							"CustomerID",
+							"Fax",
+							"Phone",
+							"PostalCode",
+							"Region"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"address",
+							"city",
+							"companyname",
+							"contactname",
+							"contacttitle",
+							"country",
+							"customerid",
+							"fax",
+							"phone",
+							"postalcode",
+							"region"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
+			}
+		}
+
+		/// <inheritdoc/>>
+		protected override List<string> EntityColumns
+		{
+			get
+			{
+				List<string>? propertiesList = new List<string>
+				{
+					nameof(CustomersEntity.Address),
+					nameof(CustomersEntity.City),
+					nameof(CustomersEntity.CompanyName),
+					nameof(CustomersEntity.ContactName),
+					nameof(CustomersEntity.ContactTitle),
+					nameof(CustomersEntity.Country),
+					nameof(CustomersEntity.CustomerID),
+					nameof(CustomersEntity.Fax),
+					nameof(CustomersEntity.Phone),
+					nameof(CustomersEntity.PostalCode),
+					nameof(CustomersEntity.Region)
 				};
+
+				return propertiesList;
 			}
 		}
 
@@ -61,10 +125,29 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[CustomerID]"
-				};
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"CustomerID"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"customerid"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
 			}
 		}
 
@@ -73,7 +156,23 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return "[dbo].[Customers]";
+				string? tablename = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
+				{
+					case DataSourceTypes.SqlServer:
+						tablename = "Customers";
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						tablename = "customers";
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return tablename;
 			}
 		}
 	}

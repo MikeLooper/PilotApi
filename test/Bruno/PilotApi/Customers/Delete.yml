@@ -5,15 +5,11 @@ info:
 
 http:
   method: DELETE
-  url: "{{Host}}{{controller}}/delete/{{newId}}"
+  url: "{{Host}}{{controller}}/delete/XYZPD"
   auth: inherit
 
 runtime:
   scripts:
-    - type: before-request
-      code: |-
-        // Accessing a passed variable in the next request
-        const newId = bru.getVar("newId");
     - type: tests
       code: |-
         test("should return success", function () {

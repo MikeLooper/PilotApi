@@ -1,9 +1,12 @@
 using Microsoft.Extensions.Logging;
 using PilotApi.Domain.Contracts.DataSource;
 using PilotApi.Repositories.Contracts.Repository;
+using PilotApi.Repositories.Handlers;
 using PilotApi.Repositories.Models.Base;
 using PilotApi.Repositories.Repositories.Base;
+using PilotApi.Shared.Constants;
 using PilotApi.Shared.Handlers;
+using System;
 using System.Collections.Generic;
 
 namespace PilotApi.Repositories.Repositories
@@ -25,11 +28,15 @@ namespace PilotApi.Repositories.Repositories
 		/// <param name="sqlBuilder">
 		/// A SQL builder object.
 		/// </param>
+		/// <param name="entityUpdateHandler">
+		/// An entity update handler object.
+		/// </param>
 		public ShippersRepository(
 			ILoggerFactory loggerFactory,
 			IDataSourceContext dataStoreContext,
-			ISqlBuilder sqlBuilder)
-			: base(loggerFactory, dataStoreContext, sqlBuilder)
+			ISqlBuilder sqlBuilder,
+			IEntityUpdateHandler entityUpdateHandler)
+			: base(loggerFactory, dataStoreContext, sqlBuilder, entityUpdateHandler)
 		{
 		}
 
@@ -38,12 +45,49 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[CompanyName]",
-					"[Phone]",
-					"[ShipperID]"
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"CompanyName",
+							"Phone",
+							"ShipperID"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"companyname",
+							"phone",
+							"shipperid"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
+			}
+		}
+
+		/// <inheritdoc/>>
+		protected override List<string> EntityColumns
+		{
+			get
+			{
+				List<string>? propertiesList = new List<string>
+				{
+					nameof(ShippersEntity.CompanyName),
+					nameof(ShippersEntity.Phone),
+					nameof(ShippersEntity.ShipperID)
 				};
+
+				return propertiesList;
 			}
 		}
 
@@ -52,10 +96,29 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return new List<string>
+				List<string>? namesList = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
 				{
-					"[ShipperID]"
-				};
+					case DataSourceTypes.SqlServer:
+						namesList = new List<string>
+						{
+							"ShipperID"
+						};
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						namesList = new List<string>
+						{
+							"shipperid"
+						};
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return namesList;
 			}
 		}
 
@@ -64,7 +127,23 @@ namespace PilotApi.Repositories.Repositories
 		{
 			get
 			{
-				return "[dbo].[Shippers]";
+				string? tablename = null;
+
+				switch (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum)
+				{
+					case DataSourceTypes.SqlServer:
+						tablename = "Shippers";
+
+						break;
+					case DataSourceTypes.PostgreSQL:
+						tablename = "shippers";
+
+						break;
+					default:
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceContext.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+				}
+
+				return tablename;
 			}
 		}
 	}

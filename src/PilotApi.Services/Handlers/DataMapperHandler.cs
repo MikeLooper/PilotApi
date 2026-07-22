@@ -111,9 +111,7 @@ namespace PilotApi.Services.Handlers
 			}
 			else
 			{
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 				throw new InvalidOperationException($"No mapper was found for the {entity.GetType().Name} Entity object ({this.GetType().Name})");
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 			}
 
 			return value;
@@ -143,7 +141,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <param name="sourceDto">
 		/// A source DTO object.
@@ -173,7 +171,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -209,7 +207,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -252,7 +250,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -295,7 +293,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -345,7 +343,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -395,7 +393,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -432,7 +430,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -469,7 +467,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -515,7 +513,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -561,7 +559,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -603,7 +601,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -645,7 +643,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -680,7 +678,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts an Entity to a Dto. Returns a tuple indicating success and the converted value.
+		/// Converts an Entity to a Dto.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -715,7 +713,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value.
+		/// Converts a Dto to an Entity.
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.
@@ -759,7 +757,7 @@ namespace PilotApi.Services.Handlers
 		}
 
 		/// <summary>
-		/// Converts a Dto to an Entity. Returns a tuple indicating success and the converted value. 
+		/// Converts a Dto to an Entity. 
 		/// </summary>
 		/// <typeparam name="TDto">
 		/// A DTO type.

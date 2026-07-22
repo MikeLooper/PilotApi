@@ -1,4 +1,5 @@
-﻿using PilotApi.Shared.Constants;
+﻿using PilotApi.Shared.Configuration;
+using PilotApi.Shared.Constants;
 using System.Collections.Generic;
 
 namespace PilotApi.Shared.Handlers
@@ -8,6 +9,17 @@ namespace PilotApi.Shared.Handlers
 	/// </summary>
 	public interface ISqlBuilder
 	{
+		/// <summary>
+		/// Build and return a connection string.
+		/// </summary>
+		/// <param name="openApi">
+		/// A <see cref="OpenApiConfiguration"/> object.
+		/// </param>
+		/// <returns>
+		/// A connection string.
+		/// </returns>
+		string? BuildConnectionString(OpenApiConfiguration? openApi);
+
 		/// <summary>
 		/// Build and return a Count(*) string.
 		/// </summary>
@@ -35,6 +47,23 @@ namespace PilotApi.Shared.Handlers
 		string BuildDelete(string tableName, List<string> keyColumnNames);
 
 		/// <summary>
+		/// Build and return a SQL string that will determine the next id (key) value for the supplied table.
+		/// </summary>
+		/// <param name="tableName">
+		/// The name of the target table.
+		/// </param>
+		/// <param name="keyColumnName">
+		/// The name of the key column, for this table.
+		/// </param>
+		/// <param name="keyDataType">
+		/// The column datatype (as a string) for the current table key.
+		/// This will be one of the <see cref="KeyColumnDataTypeConstants"/> options.
+		/// </param>
+		/// <returns>
+		/// </returns>
+		string BuildGetNextId(string tableName, string keyColumnName, string keyDataType);
+
+		/// <summary>
 		/// Build and return an INSERT string.
 		/// </summary>
 		/// <param name="tableName">
@@ -46,11 +75,17 @@ namespace PilotApi.Shared.Handlers
 		/// <param name="keyColumnNames">
 		/// A list of the column names for the source entity key(s), to be used in the WHERE clause.
 		/// </param>
-		/// <param name="dataSourceType">
-		/// The data of data source in use.
+		/// <param name="entityColumns">
+		/// A list of the column names for the entity related to the current table, to be used in the SET clause.
 		/// </param>
 		/// <param name="keyIsAutoIncrement">
 		/// A flag that indicates whether the key in the supplied table will auto-increment during insert.
+		/// Default = True.
+		/// </param>
+		/// <param name="createKey">
+		/// A flag that indicates whether new key value(s) should be created during insert.
+		/// If False, the data in the supplied model will be used as-is, with the expectation that 
+		/// the data provider supplied valid key values in the model.
 		/// Default = True.
 		/// </param>
 		/// <returns>
@@ -60,8 +95,9 @@ namespace PilotApi.Shared.Handlers
 			string tableName, 
 			List<string> columnNames, 
 			List<string> keyColumnNames,
-			DataSources dataSourceType,
-			bool keyIsAutoIncrement = true);
+			List<string> entityColumns,
+			bool keyIsAutoIncrement = true,
+			bool createKey = true);
 
 		/// <summary>
 		/// Build and return a SELECT string.
@@ -80,7 +116,10 @@ namespace PilotApi.Shared.Handlers
 		/// <returns>
 		/// A SELECT string.
 		/// </returns>
-		string BuildSelect(string tableName, List<string> columnNames, List<string>? keyColumnNames = null);
+		string BuildSelect(
+			string tableName, 
+			List<string> columnNames, 
+			List<string>? keyColumnNames = null);
 
 		/// <summary>
 		/// Build and return an UPDATE string.
@@ -94,6 +133,9 @@ namespace PilotApi.Shared.Handlers
 		/// <param name="keyColumnNames">
 		/// A list of the column names for the source entity key(s), to be used in the WHERE clause.
 		/// </param>
+		/// <param name="entityColumns">
+		/// A list of the column names for the entity related to the current table, to be used in the SET clause.
+		/// </param>
 		/// <param name="keyIsAutoIncrement">
 		/// A flag that indicates whether the key in the supplied table will auto-increment during insert.
 		/// Default = True.
@@ -105,6 +147,7 @@ namespace PilotApi.Shared.Handlers
 			string tableName, 
 			List<string> columnNames,
 			List<string> keyColumnNames,
+			List<string> entityColumns,
 			bool keyIsAutoIncrement = true);
 
 		/// <summary>

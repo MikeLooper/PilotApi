@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using PilotApi.Domain.Models.Dto;
 using PilotApi.Repositories.Models.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// The number of records in the data source table.
 		/// </returns>
-		Task<int> CountAllAsync();
+		Task<RetrieveResponse<int>> CountAllAsync();
 
 		/// <summary>
 		/// Deletes a record from the data source table based on the specified ID.
@@ -43,7 +44,7 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// A boolean value indicating whether the deletion was successful.
 		/// Returns true if at least one record was affected (deleted); otherwise, returns false.
 		/// </returns>
-		Task<bool> DeleteAsync<TType>(params TType[] ids);
+		Task<RetrieveResponse<bool>> DeleteAsync<TType>(params TType[] ids);
 
 		/// <summary>
 		/// Gets all records from the data source table.
@@ -51,7 +52,7 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// An List&lt;T&gt; containing all records from the data source table.
 		/// </returns>
-		Task<List<TEntity>?> GetAllAsync();
+		Task<RetrieveResponse<List<TEntity>>?> GetAllAsync();
 
 		/// <summary>
 		/// Gets a record from the data source table based on the specified ID.
@@ -62,7 +63,7 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// A Task&lt;T?&gt; representing the record retrieved from the data source table.
 		/// </returns>
-		Task<TEntity?> GetAsync<TType>(params TType[] ids);
+		Task<RetrieveResponse<TEntity>?> GetAsync<TType>(params TType[] ids);
 
 		/// <summary>
 		/// Inserts a new record into the data source table based on the provided model.
@@ -73,12 +74,12 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// The ID of the newly inserted record in the data source table.
 		/// </returns>
-		Task<int> InsertAsync(TEntity model);
+		Task<RetrieveResponse<TReturn>?> InsertAsync<TReturn>(TEntity model);
 
 		/// <summary>
 		/// Executes a custom SQL query against the data source and returns the results as an IEnumerable&lt;T&gt;.
 		/// </summary>
-		/// <param name="query">
+		/// <param name="querySql">
 		/// A string representing the custom SQL query to be executed against the data source.
 		/// </param>
 		/// <param name="parameters">
@@ -87,12 +88,12 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// A list of entities retrieved from the data source table.
 		/// </returns>
-		Task<IEnumerable<TEntity>?> QueryAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<IEnumerable<TEntity>>?> QueryAsync(string querySql, object? parameters = null);
 
 		/// <summary>
-		/// Executes a custom SQL query against the data source and returns the first result as a single instance of T.
+		/// Executes a custom SQL query against the data source and returns the first result as a single instance of TEntity.
 		/// </summary>
-		/// <param name="query">
+		/// <param name="querySql">
 		/// A string representing the custom SQL query to be executed against the data source.
 		/// </param>
 		/// <param name="parameters">
@@ -101,12 +102,26 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// An entity retrieved from the data source table.
 		/// </returns>
-		Task<TEntity?> QueryFirstAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<TEntity>?> QueryFirstAsync(string querySql, object? parameters = null);
+
+		/// <summary>
+		/// Executes a custom SQL query against the data source and returns a single result as an instance of TMethodType.
+		/// </summary>
+		/// <param name="querySql">
+		/// A string representing the custom SQL query to be executed against the data source.
+		/// </param>
+		/// <param name="parameters">
+		/// An optional object containing parameters to be used in the SQL query. This can be null if no parameters are needed.
+		/// </param>
+		/// <returns>
+		/// A value retrieved from the data source table.
+		/// </returns>
+		Task<RetrieveResponse<TMethodType>?> QuerySingleAsync<TMethodType>(string querySql, object? parameters = null);
 
 		/// <summary>
 		/// Executes a custom SQL query against the data source and returns a single result as an instance of T.
 		/// </summary>
-		/// <param name="query">
+		/// <param name="querySql">
 		/// A string representing the custom SQL query to be executed against the data source.
 		/// </param>
 		/// <param name="parameters">
@@ -115,7 +130,7 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// An entity retrieved from the data source table.
 		/// </returns>
-		Task<TEntity?> QuerySingleAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<TEntity>?> QuerySingleAsync(string querySql, object? parameters = null);
 
 		/// <summary>
 		/// Updates an existing record in the data source table based on the provided model.
@@ -126,6 +141,6 @@ namespace PilotApi.Repositories.Contracts.Repository.Base
 		/// <returns>
 		/// A boolean value indicating whether the update was successful.
 		/// </returns>
-		Task<bool> UpdateAsync(TEntity model);
+		Task<RetrieveResponse<bool>> UpdateAsync(TEntity model);
 	}
 }

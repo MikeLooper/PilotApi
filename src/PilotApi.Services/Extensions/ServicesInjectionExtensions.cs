@@ -7,6 +7,7 @@ using PilotApi.Domain.Contracts.Services;
 using PilotApi.Domain.Models.Dto;
 using PilotApi.Repositories.Contracts.Repository;
 using PilotApi.Repositories.DataSource;
+using PilotApi.Repositories.Handlers;
 using PilotApi.Repositories.Repositories;
 using PilotApi.Services.Contracts;
 using PilotApi.Services.Handlers;
@@ -56,6 +57,7 @@ namespace PilotApi.Services.Extensions
 			// register services
 			builder.Services.AddTransient<IDataSourceContext, DataSourceContext>();
 			builder.Services.AddTransient<IDataMapperHandler, DataMapperHandler>();
+			builder.Services.AddTransient<IEntityUpdateHandler, EntityUpdateHandler>();
 
 			builder.Services.AddTransient<ICategoriesRepository, CategoriesRepository>();
 			builder.Services.AddTransient<ICustomersRepository, CustomersRepository>();

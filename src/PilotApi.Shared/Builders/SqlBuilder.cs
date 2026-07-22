@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+﻿using Microsoft.Extensions.Logging;
+using PilotApi.Shared.Configuration;
 using PilotApi.Shared.Constants;
+using PilotApi.Shared.Contracts.Configuration;
+using PilotApi.Shared.Exceptions;
+using PilotApi.Shared.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace PilotApi.Shared.Handlers
@@ -11,6 +16,95 @@ namespace PilotApi.Shared.Handlers
 	/// </summary>
 	public class SqlBuilder : ISqlBuilder
 	{
+		/// <summary>
+		/// Instantiate a <see cref="SqlBuilder"/> object.
+		/// </summary>
+		/// <param name="loggerFactory">
+		/// A logger factory object.
+		/// </param>
+		/// <param name="applicationConfiguration">
+		/// An application configuration object.
+		/// </param>
+		/// <exception cref="ConfigurationException">
+		/// An exception related to invalid values in the configuration.
+		/// </exception>
+		public SqlBuilder(
+			ILoggerFactory loggerFactory,
+			IApplicationConfiguration applicationConfiguration)
+		{
+			this.Logger = loggerFactory.CreateLogger(GetType());
+
+			this.Initialize(applicationConfiguration);
+		}
+
+		/// <summary>
+		/// Gets a <see cref="IDataConnectionConfiguration"/> object.
+		/// </summary>
+		protected IDataConnectionConfiguration? DataConnectionConfiguration { get; private set; }
+
+		/// <summary>
+		/// Gets a <see cref="IDataSourceConfiguration"/> object.
+		/// </summary>
+		protected IDataSourceConfiguration? DataSourceConfiguration { get; private set; }
+
+		/// <summary>
+		/// Gets a flag that indicates whether the current data source is PostgreSQL.
+		/// </summary>
+		protected bool IsPostgreSQL { get; private set; }
+
+		/// <summary>
+		/// Gets a flag that indicates whether the current data source is SQL Server.
+		/// </summary>
+		protected bool IsSqlServer { get; private set; }
+
+		/// <summary>
+		/// Gets the logger instance for logging information, warnings, and errors.
+		/// </summary>
+		protected ILogger Logger { get; }
+
+		/// <inheritdoc/>>
+		public string? BuildConnectionString(OpenApiConfiguration? openApi)
+		{
+			if (openApi == null)
+			{
+				throw new ArgumentException(
+					$"The {nameof(openApi)} argument cannot be null or empty ({this.GetType().Name})");
+			}
+
+			string? connectionString = null;
+			if (this.IsSqlServer)
+			{
+				var dataSource = this.DataConnectionConfiguration.Host;
+				if (this.DataConnectionConfiguration.Port != null)
+				{
+					dataSource += "," + this.DataConnectionConfiguration.Port.ToString();
+				}
+
+				connectionString = $"Data Source={dataSource};Initial Catalog={this.DataSourceConfiguration.DataSource};" +
+					$"User Id={this.DataConnectionConfiguration.UserName};Password={this.DataConnectionConfiguration.Password};" +
+					$"Connect Timeout={this.DataConnectionConfiguration.ConnectTimeout};Trust Server Certificate=True;" +
+					$"Application Name={openApi.Title}";
+			}
+			else if (this.IsPostgreSQL)
+			{
+				// PostGreSQL
+				connectionString = $"Host={this.DataConnectionConfiguration.Host};Database={this.DataSourceConfiguration.DataSource};" +
+					$"Username={this.DataConnectionConfiguration.UserName};Password={this.DataConnectionConfiguration.Password};" +
+					$"Timeout={this.DataConnectionConfiguration.ConnectTimeout};SslMode=disable;TrustServerCertificate=true;" +
+					$"Include Error Detail=True;Application Name={openApi.Title}";
+				if (this.DataConnectionConfiguration.Port != null)
+				{
+					connectionString += $";Port={this.DataConnectionConfiguration.Port}";
+				}
+			}
+			else
+			{
+				throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+			}
+
+			return connectionString;
+		}
+
 		/// <inheritdoc/>>
 		public string BuildCount(string tableName)
 		{
@@ -20,14 +114,21 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(tableName)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("SELECT COUNT(*) FROM ");
-			returnClause.Append(tableName);
+			var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+			var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
 
-			return returnClause.ToString();
+			var querySql = new StringBuilder("SELECT COUNT(*) FROM ");
+			querySql.Append(delimitedSchemaName);
+			querySql.Append(".");
+			querySql.Append(delimitedTableName);
+
+			return querySql.ToString();
 		}
 
 		/// <inheritdoc/>>
-		public string BuildDelete(string tableName, List<string> keyColumnNames)
+		public string BuildDelete(
+			string tableName,
+			List<string> keyColumnNames)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
 			{
@@ -42,24 +143,92 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(keyColumnNames)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("DELETE FROM ");
-			returnClause.Append(tableName);
+			var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+			var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
 
-			returnClause.Append(" ");
+			var querySql = new StringBuilder("DELETE FROM ");
+			querySql.Append(delimitedSchemaName);
+			querySql.Append(".");
+			querySql.Append(delimitedTableName);
+
+			querySql.Append(" ");
 
 			var whereClause = this.BuildWhereClause(keyColumnNames);
-			returnClause.Append(whereClause);
+			querySql.Append(whereClause);
 
-			return returnClause.ToString();
+			return querySql.ToString();
+		}
+
+		/// <inheritdoc/>>
+		public string BuildGetNextId(string tableName, string keyColumnName, string keyDataType)
+		{
+			if (string.IsNullOrWhiteSpace(tableName))
+			{
+				throw new ArgumentException(
+					$"The {nameof(tableName)} argument cannot be null or empty ({this.GetType().Name})");
+			}
+
+			if (string.IsNullOrWhiteSpace(keyColumnName))
+			{
+				throw new ArgumentException(
+					$"The {nameof(keyColumnName)} argument cannot be null or empty ({this.GetType().Name})");
+			}
+
+			if (string.IsNullOrWhiteSpace(keyDataType))
+			{
+				throw new ArgumentException(
+					$"The {nameof(keyDataType)} argument cannot be null or empty ({this.GetType().Name})");
+			}
+
+			// get next id value for key column
+			var delimitedColumnName = DataSourceUtilities.DelimitName(keyColumnName, this.DataSourceConfiguration.DataSourceEnum);
+			string? querySql = null;
+			switch (keyDataType)
+			{
+				case KeyColumnDataTypeConstants.Int:
+					var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+					var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
+					querySql = $"SELECT COALESCE(MAX({delimitedColumnName}), 0) + 1 FROM {delimitedSchemaName}.{delimitedTableName}";
+
+					break;
+				case KeyColumnDataTypeConstants.String:
+					if (this.IsSqlServer)
+					{
+						querySql = $"DECLARE @ResultKey NVARCHAR(MAX); " + 
+							$"EXEC dbo.GenerateUniqueKeyDynamic " + 
+							$"@SchemaName = N'{this.DataSourceConfiguration.Schema}', " + 
+							$"@TableName = N'{tableName}', " + 
+							$"@ColumnName = N'{keyColumnName}', " + 
+							$"@GeneratedKey = @ResultKey OUTPUT; " + 
+							$"SELECT @ResultKey AS GeneratedKey;";
+					}
+					else if (this.IsPostgreSQL)
+					{
+						querySql = $"SELECT generate_unique_key_dynamic('{this.DataSourceConfiguration.Schema}', '{tableName}', '{keyColumnName}');";
+					}
+					else
+					{
+						throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
+					}
+
+					break;
+				default:
+					throw new InvalidOperationException(
+						$"The key column datatype ('{keyDataType}') was not handled: Method='{nameof(this.BuildGetNextId)}' " + 
+						$"({this.GetType().Name})");
+			}
+
+			return querySql;
 		}
 
 		/// <inheritdoc/>>
 		public string BuildInsert(
-			string tableName, 
-			List<string> columnNames, 
+			string tableName,
+			List<string> columnNames,
 			List<string> keyColumnNames,
-			DataSources dataSourceType,
-			bool keyIsAutoIncrement = true)
+			List<string> entityColumns,
+			bool keyIsAutoIncrement = true,
+			bool createKey = true)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
 			{
@@ -81,16 +250,27 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(keyColumnNames)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("INSERT INTO ");
-			returnClause.Append(tableName);
-			returnClause.Append(" (");
+			var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+			var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
+			var minimizedKeyColumnNames = DataSourceUtilities.MinimizeNames(keyColumnNames);
+
+			var querySql = new StringBuilder("INSERT INTO ");
+			querySql.Append(delimitedSchemaName);
+			querySql.Append(".");
+			querySql.Append(delimitedTableName);
+			querySql.Append(" (");
 
 			var columnsString = new StringBuilder();
 			foreach (var columnName in columnNames)
 			{
-				if (keyIsAutoIncrement && keyColumnNames.Contains(columnName))
+				var minimizedColumnName = DataSourceUtilities.MinimizeName(columnName);
+				var isAutoKeyFilter = 
+					createKey && 
+					keyIsAutoIncrement &&
+					minimizedKeyColumnNames.Contains(minimizedColumnName);
+				if (isAutoKeyFilter && this.IsSqlServer)
 				{
-					// don't include key columns in update set, when autoincrement is active
+					// don't include key columns in update set, when autoincrement is active (SqlServer)
 					continue;
 				}
 
@@ -99,18 +279,24 @@ namespace PilotApi.Shared.Handlers
 					columnsString.Append(",");
 				}
 
-				columnsString.Append(columnName);
+				var delimitedColumnName = DataSourceUtilities.DelimitName(columnName, this.DataSourceConfiguration.DataSourceEnum);
+				columnsString.Append(delimitedColumnName);
 			}
 
-			returnClause.Append(columnsString);
-			returnClause.Append(") VALUES (");
+			querySql.Append(columnsString);
+			querySql.Append(") VALUES (");
 
 			columnsString.Clear();
-			foreach (var columnName in columnNames)
+			for (var columnIndex = 0; columnIndex < columnNames.Count; columnIndex++)
 			{
-				if (keyIsAutoIncrement && keyColumnNames.Contains(columnName))
+				var minimizedColumnName = DataSourceUtilities.MinimizeName(columnNames[columnIndex]);
+				var isAutoKeyFilter = 
+					createKey &&
+					keyIsAutoIncrement && 
+					minimizedKeyColumnNames.Contains(minimizedColumnName);
+				if (isAutoKeyFilter && this.IsSqlServer)
 				{
-					// don't include key columns in values, when autoincrement is active
+					// don't include key columns in values, when autoincrement is active (SqlServer)
 					continue;
 				}
 
@@ -119,40 +305,58 @@ namespace PilotApi.Shared.Handlers
 					columnsString.Append(",");
 				}
 
-				var simpleColumn = columnName.Replace("[", "").Replace("]", "");
-				columnsString.Append($"@{simpleColumn}");
+				var minimizedEntityName = DataSourceUtilities.MinimizeName(entityColumns[columnIndex]);
+				columnsString.Append($"@{minimizedEntityName}");
 			}
 
-			returnClause.Append(columnsString);
-			returnClause.Append(") ");
+			querySql.Append(columnsString);
+			querySql.Append(") ");
 
-			if (dataSourceType == DataSources.SqlServer)
+			if (createKey && 
+				keyIsAutoIncrement && 
+				keyColumnNames.Count == 1)
 			{
-				if (keyColumnNames.Count == 1 && keyIsAutoIncrement)
+				if (this.IsSqlServer)
 				{
 					// Use SCOPE_IDENTITY() in SQL Server to retrieve the latest generated identity value.
 					// This is used to get the auto-incremented identity value after an INSERT operation.
-					returnClause.Append("; SELECT CAST(SCOPE_IDENTITY() as int);");
+					querySql.Append("; SELECT CAST(SCOPE_IDENTITY() as int);");
+				}
+				else if (this.IsPostgreSQL)
+				{
+					// Use RETURNING in PostgreSQL to retrieve the latest generated identity value.
+					// This is used to get the auto-incremented identity value after an INSERT operation.
+					var idColumn = keyColumnNames.First();
+					querySql.Append(" RETURNING ");
+					querySql.Append(idColumn);
+					querySql.Append(";");
 				}
 				else
 				{
-					// composite key - cannot return newly created composite ids: so, return a zero.
-					// If you need the details about the new row, execute this:
-					//	string sql = "INSERT INTO [dbo].[Order Details] ([Discount],[OrderID],[ProductID],[Quantity],[UnitPrice]) " +
-					//			 "OUTPUT INSERTED.* " +
-					//			 "VALUES (@Discount,@OrderID,@ProductID,@Quantity,@UnitPrice);";
-
-					//	// Returns the full populated OrderDetailsEntity
-					//	var result = await connection.QueryFirstOrDefaultAsync<OrderDetailsEntity>(sql, orderDetailsEntity);
-					returnClause.Append("; SELECT 1 as id;");
+					throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
 				}
 			}
+			else
+			{
+				// composite key - cannot return newly created composite ids: so, return a zero.
+				// If you need the details about the new row, execute this:
+				//	string sql = "INSERT INTO [dbo].[Order Details] ([Discount],[OrderID],[ProductID],[Quantity],[UnitPrice]) " +
+				//			 "OUTPUT INSERTED.* " +
+				//			 "VALUES (@Discount,@OrderID,@ProductID,@Quantity,@UnitPrice);";
 
-			return returnClause.ToString();
+				//	// Returns the full populated OrderDetailsEntity
+				//	var result = await connection.QueryFirstOrDefaultAsync<OrderDetailsEntity>(sql, orderDetailsEntity);
+				querySql.Append("; SELECT 1 AS id;");
+			}
+
+			return querySql.ToString();
 		}
 
 		/// <inheritdoc/>>
-		public string BuildSelect(string tableName, List<string> columnNames, List<string>? keyColumnNames = null)
+		public string BuildSelect(
+			string tableName,
+			List<string> columnNames,
+			List<string>? keyColumnNames = null)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
 			{
@@ -167,37 +371,44 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(columnNames)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("SELECT ");
+			var querySql = new StringBuilder("SELECT ");
 			foreach (var columnName in columnNames)
 			{
-				if (returnClause.Length > 7)
+				if (querySql.Length > 7)
 				{
-					returnClause.Append(",");
+					querySql.Append(",");
 				}
 
-				returnClause.Append(columnName);
+				var delimitedColumnName = DataSourceUtilities.DelimitName(columnName, this.DataSourceConfiguration.DataSourceEnum);
+				querySql.Append(delimitedColumnName);
 			}
 
-			returnClause.Append(" FROM ");
-			returnClause.Append(tableName);
+			var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+			var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
 
-			if (keyColumnNames != null && 
+			querySql.Append(" FROM ");
+			querySql.Append(delimitedSchemaName);
+			querySql.Append(".");
+			querySql.Append(delimitedTableName);
+
+			if (keyColumnNames != null &&
 				keyColumnNames.Count > 0)
 			{
-				returnClause.Append(" ");
+				querySql.Append(" ");
 
 				var whereClause = this.BuildWhereClause(keyColumnNames);
-				returnClause.Append(whereClause);
+				querySql.Append(whereClause);
 			}
 
-			return returnClause.ToString();
+			return querySql.ToString();
 		}
 
 		/// <inheritdoc/>>
 		public string BuildUpdate(
-			string tableName, 
-			List<string> columnNames, 
+			string tableName,
+			List<string> columnNames,
 			List<string> keyColumnNames,
+			List<string> entityColumns,
 			bool keyIsAutoIncrement = true)
 		{
 			if (string.IsNullOrWhiteSpace(tableName))
@@ -220,14 +431,21 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(keyColumnNames)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("UPDATE ");
-			returnClause.Append(tableName);
-			returnClause.Append(" SET ");
+			var delimitedSchemaName = DataSourceUtilities.DelimitName(this.DataSourceConfiguration.Schema, this.DataSourceConfiguration.DataSourceEnum);
+			var delimitedTableName = DataSourceUtilities.DelimitName(tableName, this.DataSourceConfiguration.DataSourceEnum);
+			var minimizedKeyColumnNames = DataSourceUtilities.MinimizeNames(keyColumnNames);
+
+			var querySql = new StringBuilder("UPDATE ");
+			querySql.Append(delimitedSchemaName);
+			querySql.Append(".");
+			querySql.Append(delimitedTableName);
+			querySql.Append(" SET ");
 
 			var setString = new StringBuilder();
-			foreach (var columnName in columnNames)
+			for (var columnIndex = 0; columnIndex < columnNames.Count; columnIndex++)
 			{
-				if (keyIsAutoIncrement && keyColumnNames.Contains(columnName))
+				var minimizedColumnName = DataSourceUtilities.MinimizeName(columnNames[columnIndex]);
+				if (keyIsAutoIncrement && minimizedKeyColumnNames.Contains(minimizedColumnName))
 				{
 					// don't include key columns in update set, when autoincrement is active
 					continue;
@@ -238,17 +456,18 @@ namespace PilotApi.Shared.Handlers
 					setString.Append(",");
 				}
 
-				var simpleColumn = columnName.Replace("[", "").Replace("]", "");
-				setString.Append($"{columnName} = @{simpleColumn}");
+				var minimizedEntityName = DataSourceUtilities.MinimizeName(entityColumns[columnIndex]);
+				var delimitedColumnName = DataSourceUtilities.DelimitName(columnNames[columnIndex], this.DataSourceConfiguration.DataSourceEnum);
+				setString.Append($"{delimitedColumnName} = @{minimizedEntityName}");
 			}
 
-			returnClause.Append(setString);
-			returnClause.Append(" ");
+			querySql.Append(setString);
+			querySql.Append(" ");
 
 			var whereClause = this.BuildWhereClause(keyColumnNames);
-			returnClause.Append(whereClause);
+			querySql.Append(whereClause);
 
-			return returnClause.ToString();
+			return querySql.ToString();
 		}
 
 		/// <inheritdoc/>>
@@ -261,19 +480,43 @@ namespace PilotApi.Shared.Handlers
 					$"The {nameof(keyColumnNames)} argument cannot be null or empty ({this.GetType().Name})");
 			}
 
-			var returnClause = new StringBuilder("WHERE ");
-			foreach (var key in keyColumnNames)
+			var querySql = new StringBuilder("WHERE ");
+			foreach (var keyColumn in keyColumnNames)
 			{
-				if (returnClause.Length > 6)
+				if (querySql.Length > 6)
 				{
-					returnClause.Append(" AND ");
+					querySql.Append(" AND ");
 				}
 
-				var simpleKey = key.Replace("[", "").Replace("]", "");
-				returnClause.Append($"{key} = @{simpleKey}");
+				var delimitedColumnName = DataSourceUtilities.DelimitName(keyColumn, this.DataSourceConfiguration.DataSourceEnum);
+				var minimizedColumnName = DataSourceUtilities.MinimizeName(keyColumn);
+				querySql.Append($"{delimitedColumnName} = @{minimizedColumnName}");
 			}
 
-			return returnClause.ToString();
+			return querySql.ToString();
+		}
+
+		/// <summary>
+		/// Initialize the current object with values from the constructor.
+		/// </summary>
+		/// <param name="applicationConfiguration">
+		/// An application configuration object.
+		/// </param>
+		protected virtual void Initialize(IApplicationConfiguration applicationConfiguration)
+		{
+			this.DataConnectionConfiguration = applicationConfiguration.DataConnections
+				.First(f => f.Active);
+
+			if (this.DataConnectionConfiguration == null)
+			{
+				throw new ConfigurationException(
+					$"The {nameof(IApplicationConfiguration)}.{nameof(applicationConfiguration.DataConnections)} " +
+					$"section should have at least one active setting ({this.GetType().Name})");
+			}
+
+			this.DataSourceConfiguration = applicationConfiguration.GetDataSource(this.DataConnectionConfiguration.DataSourceName);
+			this.IsPostgreSQL = this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.PostgreSQL;
+			this.IsSqlServer = this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.SqlServer;
 		}
 	}
 }

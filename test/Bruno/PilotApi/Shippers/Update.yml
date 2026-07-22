@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "companyName": "Test Shipper Updated",
+        "companyname": "Test Shipper Updated",
         "phone": "(503) 555-9831",
         "shipperID": {{newId}}
       }
