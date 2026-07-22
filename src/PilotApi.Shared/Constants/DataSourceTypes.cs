@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Enums for the available data sources.
 	/// </summary>
-	public enum DataSources
+	public enum DataSourceTypes
 	{
 		/// <summary>
 		/// Not a valid value - used to indicate failure to assign.

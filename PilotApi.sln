@@ -5,7 +5,8 @@ VisualStudioVersion = 18.6.11822.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{106CE556-96AE-4C58-90CA-7E5626ED3896}"
 	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
+		.editorconfig = .editorconfig
+		.runsettings = .runsettings
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PilotApi.Domain", "src\PilotApi.Domain\PilotApi.Domain.csproj", "{7C64C918-9378-BD78-1750-D378C9C29DB5}"
@@ -31,6 +32,17 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PilotApi.Shared.Tests", "test\PilotApi.Shared.Tests\PilotApi.Shared.Tests.csproj", "{CD1A8D96-E2C3-349F-16FC-CC406AA1E446}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PilotApi.Web.Tests", "test\PilotApi.Web.Tests\PilotApi.Web.Tests.csproj", "{855C6AF3-84CA-D97C-3455-12CAED8140B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{731B674F-12B0-48F8-8CC2-E0A79C7760DD}"
+	ProjectSection(SolutionItems) = preProject
+		docs\PilotApi_v1.yaml = docs\PilotApi_v1.yaml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{65D1AE24-AA9F-4B44-B9AD-49C6C85DB6EC}"
+	ProjectSection(SolutionItems) = preProject
+		images\logo.png = images\logo.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +105,7 @@ Global
 		{6828CE52-1733-836B-DB11-B1FC7984AEC9} = {ED5AA911-4308-41A1-B065-0450957B670B}
 		{CD1A8D96-E2C3-349F-16FC-CC406AA1E446} = {ED5AA911-4308-41A1-B065-0450957B670B}
 		{855C6AF3-84CA-D97C-3455-12CAED8140B1} = {ED5AA911-4308-41A1-B065-0450957B670B}
+		{65D1AE24-AA9F-4B44-B9AD-49C6C85DB6EC} = {106CE556-96AE-4C58-90CA-7E5626ED3896}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {08F10AAE-C616-4E11-AEB0-67109267F156}

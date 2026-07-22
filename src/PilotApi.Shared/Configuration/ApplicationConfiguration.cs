@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using PilotApi.Shared.Configuration.Base;
-using PilotApi.Shared.Constants;
 using PilotApi.Shared.Contracts.Configuration;
 using PilotApi.Shared.Exceptions;
 using System;
@@ -19,6 +18,7 @@ namespace PilotApi.Shared.Configuration
 		public ApplicationConfiguration()
 		{
 			this.DataConnections = new List<DataConnectionConfiguration>();
+			this.DataSources = new List<DataSourceConfiguration>();
 			this.OpenApi = new OpenApiConfiguration();
 		}
 
@@ -26,17 +26,27 @@ namespace PilotApi.Shared.Configuration
 		[JsonProperty]
 		public List<DataConnectionConfiguration>? DataConnections { get; set; }
 
-		/// <summary>
-		/// Gets or sets a Contact object.
-		/// </summary>
+		/// <inheritdoc/>>
+		[JsonProperty]
+		public List<DataSourceConfiguration>? DataSources { get; set; }
+
+		/// <inheritdoc/>>
 		public OpenApiConfiguration? OpenApi { get; set; }
+
+		/// <inheritdoc/>>
+		public DataSourceConfiguration? GetDataSource(string dataSourceName)
+		{
+			var dataSource = this.DataSources.FirstOrDefault(fod => fod.DataSourceName.Equals(dataSourceName, StringComparison.Ordinal));
+			return dataSource;
+		}
 
 		/// <inheritdoc/>>
 		public override string ToString()
 		{
 			return $"{nameof(this.Active)}={this.Active}, " +
-				$"{nameof(this.DataConnections)}={this.DataConnections}, " +
-				$"{nameof(this.OpenApi)}={this.OpenApi}";
+				$"{nameof(this.DataConnections)}=[{this.DataConnections}], " +
+				$"{nameof(this.DataSources)}=[{this.DataSources}], " +
+				$"{nameof(this.OpenApi)}=[{this.OpenApi}]";
 		}
 
 		/// <inheritdoc/>
@@ -47,9 +57,8 @@ namespace PilotApi.Shared.Configuration
 			if (this.DataConnections == null ||
 				this.DataConnections.Count == 0)
 			{
-				exceptions.Add(
-					new ConfigurationException(
-						$"The {nameof(this.DataConnections)} property is required and cannot be null or empty ({this.GetType().Name})"));
+				throw new ConfigurationException(
+					$"The {nameof(this.DataConnections)} property is required and cannot be null or empty ({this.GetType().Name})");
 			}
 			else
 			{
@@ -63,9 +72,41 @@ namespace PilotApi.Shared.Configuration
 					.Count();
 				if (activeCount != 1)
 				{
-					exceptions.Add(
-						new ConfigurationException(
-							$"The {nameof(this.DataConnections)} property should have one active item ({this.GetType().Name})"));
+					throw new ConfigurationException(
+						$"The {nameof(this.DataConnections)} property should have one active item ({this.GetType().Name})");
+				}
+			}
+
+			if (this.DataSources == null ||
+				this.DataSources.Count == 0)
+			{
+				exceptions.Add(
+					new ConfigurationException(
+						$"The {nameof(this.DataSources)} property is required and cannot be null or empty ({this.GetType().Name})"));
+			}
+			else
+			{
+				foreach (var dataSource in this.DataSources)
+				{
+					dataSource.Validate(ref exceptions);
+				}
+			}
+
+			if (exceptions.Count() == 0)
+			{
+				// verify relationships between sections (once other settings are valid)
+				foreach (var dataConnection in this.DataConnections)
+				{
+					var foundMatch = this.DataSources
+							.Any(w => w.Active &&
+							w.DataSourceName.Equals(dataConnection.DataSourceName, StringComparison.Ordinal));
+					if (!foundMatch)
+					{
+						exceptions.Add(
+							new ConfigurationException(
+								$"The {nameof(this.DataConnections)}[???].{nameof(dataConnection.DataSourceName)} " + 
+								$"value does not match a {nameof(this.DataSources)}[???].{nameof(dataConnection.DataSourceName)} value ({this.GetType().Name})"));
+					}
 				}
 			}
 
@@ -86,12 +127,10 @@ namespace PilotApi.Shared.Configuration
 			}
 		}
 
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
 		/// <inheritdoc/>
-		[Obsolete("The Validate() method should be used with this class")]
+		[Obsolete("The Validate() method should NOT be used with this class")]
 		public override void Validate(ref List<Exception> exceptions)
 		{
 		}
-#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 	}
 }

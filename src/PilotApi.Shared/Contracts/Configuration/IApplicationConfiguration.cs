@@ -14,13 +14,21 @@ namespace PilotApi.Shared.Contracts.Configuration
 	///		"DataConnections": [
 	///			{
 	///				"ConnectTimeout": 0,
-	///				"DataSourceName": "SampleDatabase",
-	///				"DataSourceType": "SqlServer",
+	///				"DataSourceName": "SampleDataSource",
 	///				"Host": "localhost",
-	///				"Password": "sedrt^FLKNR434",
+	///				"Password": "[.........]",
 	///				"Port": 0,
 	///				"UserName": "SampleUser"
 	/// 		}
+	///		],
+	///		"DataSources": [
+	///			{
+	///				"Active": true,
+	///				"DataSourceName": "SampleDataSource",
+	///				"DataSource": "NorthWind",
+	///				"DataSourceType": "SqlServer",
+	///				"Schema": "dbo"
+	///			}
 	///		],
 	///		"OpenApi": {
 	///			"Title": "PilotApi",
@@ -45,8 +53,24 @@ namespace PilotApi.Shared.Contracts.Configuration
 		List<DataConnectionConfiguration>? DataConnections { get; set; }
 
 		/// <summary>
-		/// Gets or sets a Contact object.
+		/// Gets or sets the list of data source configurations for the application.
+		/// </summary>
+		List<DataSourceConfiguration>? DataSources { get; set; }
+
+		/// <summary>
+		/// Gets or sets an object with OpenApi settings.
 		/// </summary>
 		OpenApiConfiguration? OpenApi { get; set; }
+
+		/// <summary>
+		/// Return a <see cref="DataSourceConfiguration"/> object for the supplied data source name.
+		/// </summary>
+		/// <param name="dataSourceName">
+		/// The name of the desired data source section.
+		/// </param>
+		/// <returns>
+		/// A <see cref="DataSourceConfiguration"/> object.
+		/// </returns>
+		DataSourceConfiguration? GetDataSource(string dataSourceName);
 	}
 }

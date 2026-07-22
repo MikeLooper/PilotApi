@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <CodeCoverage>
+            <ModulePaths>
+              <Include>
+                <!-- Product assemblies -->
+                <ModulePath>.*\\PilotApi\.Web\.dll$</ModulePath>
+                <ModulePath>.*\\PilotApi\.Repositories\.dll$</ModulePath>
+                <ModulePath>.*\\PilotApi\.Domain\.dll$</ModulePath>
+                <ModulePath>.*\\PilotApi\.Shared\.dll$</ModulePath>
+                <ModulePath>.*\\PilotApi\.Services\.dll$</ModulePath>
+              </Include>
+              <Exclude>
+                <!-- Test projects -->
+                <ModulePath>.*\\PilotApi\..*\.Tests\.dll$</ModulePath>
+                <ModulePath>.*\\PilotApi\.TestingShared\.dll$</ModulePath>
+
+                <!-- Framework/vendor -->
+                <ModulePath>.*\\Microsoft\..*\.dll$</ModulePath>
+                <ModulePath>.*\\System\..*\.dll$</ModulePath>
+                <ModulePath>.*\\mscorlib\.dll$</ModulePath>
+                <ModulePath>.*\\netstandard\.dll$</ModulePath>
+                <ModulePath>.*\\runtime\..*\.dll$</ModulePath>
+              </Exclude>
+            </ModulePaths>
+
+            <!-- Optional: avoid noise from generated/compiler helpers -->
+            <Attributes>
+              <Exclude>
+                <Attribute>^System\.Diagnostics\.DebuggerHiddenAttribute$</Attribute>
+                <Attribute>^System\.Diagnostics\.DebuggerNonUserCodeAttribute$</Attribute>
+                <Attribute>^System\.CodeDom\.Compiler\.GeneratedCodeAttribute$</Attribute>
+                <Attribute>^System\.Runtime\.CompilerServices\.CompilerGeneratedAttribute$</Attribute>
+              </Exclude>
+            </Attributes>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

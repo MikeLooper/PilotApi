@@ -1,10 +1,14 @@
 using Dapper;
 using Microsoft.Extensions.Logging;
 using PilotApi.Domain.Contracts.DataSource;
+using PilotApi.Domain.Models.Dto;
 using PilotApi.Repositories.Contracts.Repository.Base;
+using PilotApi.Repositories.Handlers;
 using PilotApi.Repositories.Models.Base;
+using PilotApi.Shared.Constants;
 using PilotApi.Shared.Exceptions;
 using PilotApi.Shared.Handlers;
+using PilotApi.Shared.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,21 +34,49 @@ namespace PilotApi.Repositories.Repositories.Base
 		/// <param name="sqlBuilder">
 		/// A SQL builder object.
 		/// </param>
+		/// <param name="entityUpdateHandler">
+		/// An entity update handler object.
+		/// </param>
 		protected RepositoryBase(
 			ILoggerFactory loggerFactory,
 			IDataSourceContext dataStoreContext,
-			ISqlBuilder sqlBuilder)
+			ISqlBuilder sqlBuilder,
+			IEntityUpdateHandler entityUpdateHandler)
 		{
 			this.Logger = loggerFactory.CreateLogger(GetType());
 			this.DataSourceContext = dataStoreContext;
 			this.SqlBuilder = sqlBuilder;
+			this.EntityUpdateHandler = entityUpdateHandler;
+
+			// default assignments
+			this.CreateKey = true;
+			this.KeyColumnDataTypes = new List<string>
+			{
+				KeyColumnDataTypeConstants.Int
+			};
 		}
 
 		/// <summary>
-		/// Gets a list of the column names for the entity. 
+		/// Gets a list of the column names for the current table. 
+		/// The elements in this list should map one-to-one with the elements in the <see cref="EntityColumns"/> property.
 		/// This property is used to construct SQL queries for inserting and updating records in the data source.
+		/// For best results, do not include delimiters ([,],") on any of these items.
 		/// </summary>
 		protected abstract List<string> ColumnNames { get; }
+
+		/// <summary>
+		/// A flag that indicates whether new key value(s) should be created during insert.
+		/// If False, the data in the supplied model will be used as-is, with the expectation that 
+		/// the data provider supplied valid key values in the model.
+		/// Default = True.
+		/// </summary>
+		protected bool CreateKey { get; set; }
+
+		/// <summary>
+		/// A flag that indicates whether this object has been validated.
+		/// Default = False.
+		/// </summary>
+		protected bool WasValidated { get; set; }
 
 		/// <summary>
 		/// Gets the data source context, which provides access to the data source connection and other data-related operations.
@@ -52,11 +84,33 @@ namespace PilotApi.Repositories.Repositories.Base
 		protected IDataSourceContext DataSourceContext { get; }
 
 		/// <summary>
-		/// Gets a list of the column names for the entity key(s).
+		/// Gets a list of the column names for the entity related to the current table.
+		/// The elements in this list should map one-to-one with the elements in the <see cref="ColumnNames"/> property.
+		/// This property is used to construct SQL queries for inserting and updating records in the data source.
+		/// For best results, do not include delimiters ([,],") on any of these items.
+		/// </summary>
+		protected abstract List<string> EntityColumns { get; }
+
+		/// <summary>
+		/// Gets an entity update handler object.
+		/// </summary>
+		protected IEntityUpdateHandler EntityUpdateHandler { get; }
+
+		/// <summary>
+		/// Gets a list of the column names for the current table key(s).
 		/// This property is used to construct SQL queries for deleting, getting, and updating records in the data source.
-		/// If the current table uses more than one key column, this value should be a comma-separated-list of columns.
+		/// The items in this list should directly relate to the items in the <see cref="KeyColumnDataTypes"/> property.
+		/// For best results, do not include delimiters ([,],") on any of these items.
 		/// </summary>
 		protected abstract List<string> KeyColumnNames { get; }
+
+		/// <summary>
+		/// Gets a list of the column datatypes (as strings) for the current table key(s).
+		/// The items in this list should directly relate to the items in the <see cref="KeyColumnNames"/> property.
+		/// Available values can be found in the <see cref="KeyColumnDataTypeConstants"/> options.
+		/// Default: <see cref="KeyColumnDataTypeConstants.Int"/>.
+		/// </summary>
+		protected List<string> KeyColumnDataTypes { get; set; }
 
 		/// <summary>
 		/// A flag that indicates whether the key in this table will auto-increment during insert.
@@ -76,23 +130,9 @@ namespace PilotApi.Repositories.Repositories.Base
 
 		/// <summary>
 		/// Gets the name of the data source table associated with the entity.
+		/// For best results, do not include delimiters ([,],") on this value.
 		/// </summary>
 		protected abstract string TableName { get; }
-
-		/// <summary>
-		/// A flag that indicates whether this object has been validated.
-		/// Default = False.
-		/// </summary>
-		protected bool WasValidated { get; set; }
-
-		/// <inheritdoc/>>
-		public override string ToString()
-		{
-			return $"{nameof(this.ColumnNames)}={this.ColumnNames}, " +
-				$"{nameof(this.KeyColumnNames)}={this.KeyColumnNames}, " +
-				$"{nameof(this.TableName)}={this.TableName}, " +
-				$"{nameof(this.DataSourceContext)}={this.DataSourceContext}";
-		}
 
 		/// <summary>
 		/// Build and return a parameter object that would be supplied to a Dapper command, based upon the key columns property.
@@ -118,8 +158,8 @@ namespace PilotApi.Repositories.Repositories.Base
 			if (keyColumnNames.Count != ids.Length)
 			{
 				throw new ArgumentException(
-					$"The {nameof(keyColumnNames)} argument must have the same number of items as " + 
-					$"the {nameof(ids)} argument: {nameof(keyColumnNames)}={keyColumnNames.Count}, {nameof(ids)}={ids.Length} " + 
+					$"The {nameof(keyColumnNames)} argument must have the same number of items as " +
+					$"the {nameof(ids)} argument: {nameof(keyColumnNames)}={keyColumnNames.Count}, {nameof(ids)}={ids.Length} " +
 					$"({this.GetType().Name})");
 			}
 
@@ -127,22 +167,24 @@ namespace PilotApi.Repositories.Repositories.Base
 
 			for (var keyIndex = 0; keyIndex < this.KeyColumnNames.Count; keyIndex++)
 			{
-				var columnKey = this.KeyColumnNames[keyIndex].Replace("[", "").Replace("]", "");
+				var keyColumnName = this.KeyColumnNames[keyIndex];
+				var cleanColumnName = DataSourceUtilities.MinimizeName(keyColumnName);
+
 				var columnValue = ids[keyIndex];
 
-				dynamicParameters.Add(columnKey, columnValue);
+				dynamicParameters.Add(cleanColumnName, columnValue);
 			}
 
 			return dynamicParameters;
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<int> CountAllAsync()
+		public virtual async Task<RetrieveResponse<int>> CountAllAsync()
 		{
 			this.Validate();
 
 			// Construct the SQL query to select all records from the table.
-			var queryString = this.SqlBuilder.BuildCount(this.TableName);
+			var querySql = this.SqlBuilder.BuildCount(this.TableName);
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
@@ -152,7 +194,7 @@ namespace PilotApi.Repositories.Repositories.Base
 			{
 				// Execute the query asynchronously and retrieve the results.
 				result = await connection.ExecuteAsync(
-					queryString,
+					querySql,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 			}
 			catch (Exception exc)
@@ -169,11 +211,11 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return the retrieved count.
-			return result;
+			return new RetrieveResponse<int>(result);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<bool> DeleteAsync<TType>(params TType[] ids)
+		public virtual async Task<RetrieveResponse<bool>> DeleteAsync<TType>(params TType[] ids)
 		{
 			this.Validate();
 
@@ -188,18 +230,21 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Construct the SQL query to delete the record from the table.
-			var querySql = this.SqlBuilder.BuildDelete(this.TableName, this.KeyColumnNames);
+			var querySql = this.SqlBuilder.BuildDelete(
+				this.TableName,
+				this.KeyColumnNames);
 			var queryParameters = this.BuildParameters(this.KeyColumnNames, ids);
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
 
+			string? errorMessage = null;
 			var success = false;
 			try
 			{
 				// Execute the query asynchronously and retrieve the result.
 				var result = await connection.ExecuteAsync(
-					querySql, 
+					querySql,
 					queryParameters,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 				success = result > 0;
@@ -210,6 +255,7 @@ namespace PilotApi.Repositories.Repositories.Base
 				else
 				{
 					await this.DataSourceContext.Rollback();
+					errorMessage = $"Zero rows were deleted: {querySql}";
 				}
 			}
 			catch (Exception exc)
@@ -226,16 +272,18 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return true if at least one record was affected; otherwise, return false.
-			return success;
+			return new RetrieveResponse<bool>(success, errorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<List<TEntity>?> GetAllAsync()
+		public virtual async Task<RetrieveResponse<List<TEntity>>?> GetAllAsync()
 		{
 			this.Validate();
 
 			// Construct the SQL query to select all records from the table.
-			var queryString = this.SqlBuilder.BuildSelect(this.TableName, this.ColumnNames);
+			var querySql = this.SqlBuilder.BuildSelect(
+				this.TableName,
+				this.ColumnNames);
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
@@ -245,7 +293,7 @@ namespace PilotApi.Repositories.Repositories.Base
 			{
 				// Execute the query asynchronously and retrieve the results.
 				result = await connection.QueryAsync<TEntity>(
-					queryString,
+					querySql,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 			}
 			catch (Exception exc)
@@ -262,11 +310,11 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return the retrieved entities.
-			return result?.ToList();
+			return new RetrieveResponse<List<TEntity>>(result?.ToList());
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<TEntity?> GetAsync<TType>(params TType[] ids)
+		public virtual async Task<RetrieveResponse<TEntity>?> GetAsync<TType>(params TType[] ids)
 		{
 			this.Validate();
 
@@ -276,7 +324,10 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Construct the SQL query to select a record by its ID from the table.
-			var querySql = this.SqlBuilder.BuildSelect(this.TableName, this.ColumnNames, this.KeyColumnNames);
+			var querySql = this.SqlBuilder.BuildSelect(
+				this.TableName,
+				this.ColumnNames,
+				this.KeyColumnNames);
 			var queryParameters = this.BuildParameters(this.KeyColumnNames, ids);
 
 			// Open a data source connection.
@@ -287,7 +338,7 @@ namespace PilotApi.Repositories.Repositories.Base
 			{
 				// Execute the query asynchronously and retrieve the result.
 				result = await connection.QuerySingleOrDefaultAsync<TEntity>(
-					querySql, 
+					querySql,
 					queryParameters,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 
@@ -306,11 +357,11 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return the retrieved entity (or null if not found).
-			return result;
+			return new RetrieveResponse<TEntity>(result);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<int> InsertAsync(TEntity model)
+		public virtual async Task<RetrieveResponse<TReturn>?> InsertAsync<TReturn>(TEntity model)
 		{
 			this.Validate();
 
@@ -324,30 +375,60 @@ namespace PilotApi.Repositories.Repositories.Base
 				throw new InvalidOperationException($"This method should not be used for multi-key tables ({this.GetType().Name})");
 			}
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 			// Construct the SQL query to insert a new record into the table.
 			var querySql = this.SqlBuilder.BuildInsert(
-				this.TableName, 
-				this.ColumnNames, 
+				this.TableName,
+				this.ColumnNames,
 				this.KeyColumnNames,
-				this.DataSourceContext.DataConnectionConfiguration.DataSourceEnum,
-				this.KeyIsAutoIncrement);
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+				this.EntityColumns,
+				this.KeyIsAutoIncrement,
+				this.CreateKey);
+
+			// get alternate Ids for certain data source type/table/key-column conditions
+			if (this.CreateKey)
+			{
+				var nextIds = await this.GetNextIdsAsync();
+				if (nextIds != null &&
+					nextIds.Keys.Count > 0)
+				{
+					// if nextIds are present, assign them to the related column(s) on the current model
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+					model = this.EntityUpdateHandler.Update(model, nextIds);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+				}
+			}
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
 
-			int id = -01;
-			var success = false;
+			TReturn? id = default;
 			try
 			{
 				// Execute the query asynchronously and retrieve the inserted ID.
-				id = await connection.QueryFirstOrDefaultAsync<int>(
-					querySql, 
+				id = await connection.QueryFirstOrDefaultAsync<TReturn>(
+					querySql,
 					model,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 
-				success = id > 0;
+				var success = false;
+				if (id is int)
+				{
+					var changedInt = Convert.ToInt32(id);
+					success = changedInt > 0;
+				}
+				else if (id is string)
+				{
+					var changedString = id.ToString();
+					success = !string.IsNullOrEmpty(changedString);
+				}
+				else
+				{
+					throw new InvalidOperationException(
+								$"The generic datatype ('{typeof(TReturn).Name}') was not handled: Method='{nameof(this.InsertAsync)}' " + 
+								$"({this.GetType().Name})");
+
+				}
+
 				if (success)
 				{
 					await this.DataSourceContext.Commit();
@@ -371,17 +452,17 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return the inserted ID.
-			return id;
+			return new RetrieveResponse<TReturn>(id);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<IEnumerable<TEntity>?> QueryAsync(string query, object? parameters = null)
+		public virtual async Task<RetrieveResponse<IEnumerable<TEntity>>?> QueryAsync(string querySql, object? parameters = null)
 		{
 			this.Validate();
 
-			if (string.IsNullOrWhiteSpace(query))
+			if (string.IsNullOrWhiteSpace(querySql))
 			{
-				throw new ArgumentException($"Invalid argument: {nameof(query)} ({this.GetType().Name})");
+				throw new ArgumentException($"Invalid argument: {nameof(querySql)} ({this.GetType().Name})");
 			}
 
 			// Open a data source connection.
@@ -392,7 +473,7 @@ namespace PilotApi.Repositories.Repositories.Base
 			{
 				// Execute the query asynchronously
 				var taskResult = await connection.QueryAsync<TEntity>(
-					query, 
+					querySql,
 					parameters,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 				result = taskResult.ToList();
@@ -410,17 +491,17 @@ namespace PilotApi.Repositories.Repositories.Base
 				connection.Close();
 			}
 
-			return result;
+			return new RetrieveResponse<IEnumerable<TEntity>>(result);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<TEntity?> QueryFirstAsync(string query, object? parameters = null)
+		public virtual async Task<RetrieveResponse<TEntity>?> QueryFirstAsync(string querySql, object? parameters = null)
 		{
 			this.Validate();
 
-			if (string.IsNullOrWhiteSpace(query))
+			if (string.IsNullOrWhiteSpace(querySql))
 			{
-				throw new ArgumentException($"Invalid argument: {nameof(query)} ({this.GetType().Name})");
+				throw new ArgumentException($"Invalid argument: {nameof(querySql)} ({this.GetType().Name})");
 			}
 
 			// Open a data source connection.
@@ -431,7 +512,7 @@ namespace PilotApi.Repositories.Repositories.Base
 			{
 				// Execute the query asynchronously
 				result = await connection.QueryFirstAsync<TEntity>(
-					query, 
+					querySql,
 					parameters,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 			}
@@ -448,34 +529,34 @@ namespace PilotApi.Repositories.Repositories.Base
 				connection.Close();
 			}
 
-			return result;
+			return new RetrieveResponse<TEntity>(result);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<TEntity?> QuerySingleAsync(string query, object? parameters = null)
+		public virtual async Task<RetrieveResponse<TMethodType>?> QuerySingleAsync<TMethodType>(string querySql, object? parameters = null)
 		{
 			this.Validate();
 
-			if (string.IsNullOrWhiteSpace(query))
+			if (string.IsNullOrWhiteSpace(querySql))
 			{
-				throw new ArgumentException($"Invalid argument: {nameof(query)} ({this.GetType().Name})");
+				throw new ArgumentException($"Invalid argument: {nameof(querySql)} ({this.GetType().Name})");
 			}
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
 
-			TEntity? result = null;
+			TMethodType? result = default;
 			try
 			{
 				// Execute the query asynchronously
-				result = await connection.QuerySingleAsync<TEntity>(
-					query, 
+				result = await connection.QuerySingleAsync<TMethodType>(
+					querySql,
 					parameters,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 			}
 			catch (Exception exc)
 			{
-				this.Logger.LogError(exc, nameof(this.QuerySingleAsync));
+				this.Logger.LogError(exc, $"{nameof(this.QuerySingleAsync)}-TMethodType");
 				await this.DataSourceContext.Rollback();
 
 				throw;
@@ -486,11 +567,57 @@ namespace PilotApi.Repositories.Repositories.Base
 				connection.Close();
 			}
 
-			return result;
+			return new RetrieveResponse<TMethodType>(result);
 		}
 
 		/// <inheritdoc/>>
-		public virtual async Task<bool> UpdateAsync(TEntity model)
+		public virtual async Task<RetrieveResponse<TEntity>?> QuerySingleAsync(string querySql, object? parameters = null)
+		{
+			this.Validate();
+
+			if (string.IsNullOrWhiteSpace(querySql))
+			{
+				throw new ArgumentException($"Invalid argument: {nameof(querySql)} ({this.GetType().Name})");
+			}
+
+			// Open a data source connection.
+			var connection = this.DataSourceContext.GetConnection();
+
+			TEntity? result = null;
+			try
+			{
+				// Execute the query asynchronously
+				result = await connection.QuerySingleAsync<TEntity>(
+					querySql,
+					parameters,
+					transaction: this.DataSourceContext.DataSourceTransaction);
+			}
+			catch (Exception exc)
+			{
+				this.Logger.LogError(exc, $"{nameof(this.QuerySingleAsync)}-TEntity");
+				await this.DataSourceContext.Rollback();
+
+				throw;
+			}
+			finally
+			{
+				// data source cleanup
+				connection.Close();
+			}
+
+			return new RetrieveResponse<TEntity>(result);
+		}
+
+		/// <inheritdoc/>>
+		public override string ToString()
+		{
+			return $"{nameof(this.ColumnNames)}={this.ColumnNames}, " +
+				$"{nameof(this.KeyColumnNames)}={this.KeyColumnNames}, " +
+				$"{nameof(this.DataSourceContext)}={this.DataSourceContext}";
+		}
+
+		/// <inheritdoc/>>
+		public virtual async Task<RetrieveResponse<bool>> UpdateAsync(TEntity model)
 		{
 			this.Validate();
 
@@ -501,20 +628,22 @@ namespace PilotApi.Repositories.Repositories.Base
 
 			// Construct the SQL query to update the record in the table.
 			var querySql = this.SqlBuilder.BuildUpdate(
-				this.TableName, 
-				this.ColumnNames, 
+				this.TableName,
+				this.ColumnNames,
 				this.KeyColumnNames,
+				this.EntityColumns,
 				this.KeyIsAutoIncrement);
 
 			// Open a data source connection.
 			var connection = this.DataSourceContext.GetConnection();
 
+			string? errorMessage = null;
 			var success = false;
 			try
 			{
 				// Execute the query asynchronously and retrieve the result.
 				var result = await connection.ExecuteAsync(
-					querySql, 
+					querySql,
 					model,
 					transaction: this.DataSourceContext.DataSourceTransaction);
 
@@ -526,6 +655,7 @@ namespace PilotApi.Repositories.Repositories.Base
 				else
 				{
 					await this.DataSourceContext.Rollback();
+					errorMessage = $"Zero rows were updated: {querySql}";
 				}
 			}
 			catch (Exception exc)
@@ -542,7 +672,84 @@ namespace PilotApi.Repositories.Repositories.Base
 			}
 
 			// Return true if at least one record was affected; otherwise, return false.
-			return success;
+			return new RetrieveResponse<bool>(success, errorMessage);
+		}
+
+		/// <summary>
+		/// Get the next id values for the current table and key columns;
+		/// </summary>
+		/// <returns>
+		/// A dictionary of: key column name and next id value.
+		/// </returns>
+		protected virtual async Task<Dictionary<string, object>> GetNextIdsAsync()
+		{
+			var returnDict = new Dictionary<string, object>();
+
+			if (this.DataSourceContext.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.PostgreSQL)
+			{
+				// Open a data source connection.
+				var connection = this.DataSourceContext.GetConnection();
+
+				try
+				{
+					for (var keyIndex = 0; keyIndex < this.KeyColumnNames.Count; keyIndex++)
+					{
+						var keyColumnName = this.KeyColumnNames[keyIndex];
+						var keyDataType = this.KeyColumnDataTypes[keyIndex];
+						var querySql = this.SqlBuilder.BuildGetNextId(this.TableName, keyColumnName, keyDataType);
+
+						switch (keyDataType)
+						{
+							case KeyColumnDataTypeConstants.Int:
+								var queryResponseInt = await this.QuerySingleAsync<int>(querySql);
+								if (queryResponseInt.Result > 0)
+								{
+									returnDict.Add(keyColumnName, queryResponseInt.Result);
+								}
+								else
+								{
+									throw new InvalidOperationException(
+										$"The {nameof(QuerySingleAsync)} method returned an id value that was invalid: '{queryResponseInt.Result}' " + 
+										$"({this.GetType().Name})");
+								}
+
+								break;
+							case KeyColumnDataTypeConstants.String:
+								var queryResponseString = await this.QuerySingleAsync<string>(querySql);
+								if (!string.IsNullOrWhiteSpace(queryResponseString.Result))
+								{
+									returnDict.Add(keyColumnName, queryResponseString.Result);
+								}
+								else
+								{
+									throw new InvalidOperationException(
+										$"The {nameof(QuerySingleAsync)} method returned an id value that was invalid: '{queryResponseString.Result}' " + 
+										$"({this.GetType().Name})");
+								}
+
+								break;
+							default:
+								throw new InvalidOperationException(
+									$"The key column datatype ('{keyDataType}') was not handled: Method='{nameof(this.GetNextIdsAsync)}' " + 
+									$"({this.GetType().Name})");
+						}
+					}
+				}
+				catch (Exception exc)
+				{
+					this.Logger.LogError(exc, nameof(this.GetNextIdsAsync));
+					await this.DataSourceContext.Rollback();
+
+					throw;
+				}
+				finally
+				{
+					// data source cleanup
+					connection.Close();
+				}
+			}
+
+			return returnDict;
 		}
 
 		/// <summary>
@@ -562,11 +769,61 @@ namespace PilotApi.Repositories.Repositories.Base
 					$"The {nameof(this.ColumnNames)} property is required and cannot be null or empty ({this.GetType().Name})");
 			}
 
+			if (this.EntityColumns == null ||
+				this.EntityColumns.Count == 0)
+			{
+				throw new ConfigurationException(
+					$"The {nameof(this.EntityColumns)} property is required and cannot be null or empty ({this.GetType().Name})");
+			}
+			else
+			{
+				var columnCount = this.ColumnNames == null ? 0 : this.ColumnNames.Count;
+				var entityCount = this.EntityColumns.Count;
+				if (columnCount != entityCount)
+				{ 
+					throw new ConfigurationException(
+						$"The number of items in the {nameof(this.ColumnNames)} and {nameof(this.EntityColumns)} properties " + 
+						$"must be identical: {nameof(this.ColumnNames)}={columnCount} {nameof(this.EntityColumns)}={entityCount} ({this.GetType().Name})");
+				}
+			}
+
 			if (this.KeyColumnNames == null ||
 				this.KeyColumnNames.Count == 0)
 			{
 				throw new ConfigurationException(
 					$"The {nameof(this.KeyColumnNames)} property is required and cannot be null or empty ({this.GetType().Name})");
+			}
+
+			if (this.KeyColumnDataTypes == null ||
+				this.KeyColumnDataTypes.Count == 0)
+			{
+				throw new ConfigurationException(
+					$"The {nameof(this.KeyColumnDataTypes)} property is required and cannot be null or empty ({this.GetType().Name})");
+			}
+			else
+			{
+				// validate types
+				foreach (var dataType in this.KeyColumnDataTypes)
+				{
+					if (!KeyColumnDataTypeConstants.AvailableOptions.Contains(dataType))
+					{
+						throw new ConfigurationException(
+							$"An item in the {nameof(this.KeyColumnDataTypes)} property is not valid.  " +
+							$"Valid values include the following: '{string.Join("', '", KeyColumnDataTypeConstants.AvailableOptions)}' " +
+							$"({this.GetType().Name})");
+					}
+				}
+
+				// validate item counts
+				var columnCount = this.KeyColumnNames == null ? 0 : this.KeyColumnNames.Count;
+				var dataTypeCount = this.KeyColumnDataTypes.Count;
+				if (columnCount != dataTypeCount)
+				{ 
+					throw new ConfigurationException(
+						$"The number of items in the {nameof(this.KeyColumnNames)} and {nameof(this.KeyColumnDataTypes)} properties " + 
+						$"must be identical: {nameof(this.KeyColumnNames)}={columnCount} {nameof(this.KeyColumnDataTypes)}={dataTypeCount} " + 
+						$"({this.GetType().Name})");
+				}
 			}
 
 			if (string.IsNullOrWhiteSpace(this.TableName))

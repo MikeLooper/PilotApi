@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PilotApi.Domain.Contracts.Base;
 using PilotApi.Domain.Contracts.Services.Base;
 using PilotApi.Domain.Models.Dto;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,13 +66,16 @@ namespace PilotApi.Web.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		public async Task<IActionResult?> GetAll()
 		{
-			var result = await this.Service.GetAllAsync();
-			if (result == null)
+			var retrieveResponse = await this.Service.GetAllAsync();
+			if (retrieveResponse.IsError)
 			{
-				return this.NotFound();
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
 			}
 
-			return this.Ok(result.ToList().AsReadOnly());
+			return this.Ok(retrieveResponse.Result
+				.ToList()
+				.AsReadOnly());
 		}
 
 		/// <summary>
@@ -89,13 +93,14 @@ namespace PilotApi.Web.Controllers
 		public async Task<IActionResult?> GetById(
 			[Required][FromRoute] int id)
 		{
-			var result = await this.Service.GetByIdAsync(id);
-			if (result == null)
+			var retrieveResponse = await this.Service.GetByIdAsync(id);			
+			if (retrieveResponse.IsError)
 			{
-				return this.NotFound();
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
 			}
 
-			return this.Ok(result);
+			return this.Ok(retrieveResponse.Result);
 		}
 
 		/// <summary>
@@ -108,18 +113,45 @@ namespace PilotApi.Web.Controllers
 		/// </returns>
 		[HttpPost]
 		[Route("add")]
-		[ProducesResponseType<AddResponse>(StatusCodes.Status200OK)]
-		public async Task<IActionResult> Add(
+		[ProducesResponseType<AddResponseInt>(StatusCodes.Status200OK)]
+		public async Task<IActionResult> Add<TReturn>(
 			[Required][FromBody] Dto model)
 		{
-			var result = await this.Service.InsertAsync(model);
-			if (result <= 0)
+			var retrieveResponse = await this.Service.InsertAsync<TReturn>(model);
+			if (retrieveResponse.IsError)
+			{
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
+				return this.BadRequest();
+			}
+
+			var success = false;
+			string? resultResponse = null;
+			if (retrieveResponse.Result is int)
+			{
+				var changedInt = Convert.ToInt32(retrieveResponse.Result);
+				success = changedInt > 0;
+				resultResponse = changedInt.ToString();
+			}
+			else if (retrieveResponse.Result is string)
+			{
+				resultResponse = retrieveResponse.Result.ToString();
+				success = !string.IsNullOrEmpty(resultResponse);
+			}
+			else
+			{
+				throw new InvalidOperationException(
+							$"The generic datatype ('{typeof(TReturn).Name}') was not handled: Method='{nameof(this.Add)}' " + 
+							$"({this.GetType().Name})");
+
+			}
+
+			if (!success)
 			{
 				this.Response.Headers["Warning"] = "Update attempt failed in the database";
 				return this.BadRequest();
 			}
 
-			return this.Ok(new AddResponse(result));
+			return this.Ok(new AddResponseString(resultResponse));
 		}
 
 		/// <summary>
@@ -137,10 +169,10 @@ namespace PilotApi.Web.Controllers
 		public async Task<IActionResult> Update(
 			[Required][FromBody] Dto model)
 		{
-			var result = await this.Service.UpdateAsync(model);
-			if (!result)
+			var retrieveResponse = await this.Service.UpdateAsync(model);
+			if (retrieveResponse.IsError)
 			{
-				this.Response.Headers["Warning"] = "Delete attempt failed in the database";
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
 				return this.BadRequest();
 			}
 
@@ -161,9 +193,11 @@ namespace PilotApi.Web.Controllers
 		public async Task<IActionResult> Delete(
 			[Required][FromRoute] int id)
 		{
-			var result = await this.Service.DeleteAsync(id);
-			if (!result)
+			var retrieveResponse = await this.Service.DeleteAsync(id);
+			
+			if (retrieveResponse.IsError)
 			{
+				this.Response.Headers["Warning"] = retrieveResponse.ErrorMessage;
 				return this.BadRequest();
 			}
 

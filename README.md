@@ -20,7 +20,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/MikeLooper/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/logo.png" alt="Logo" width="660" height="350">
   </a>
 
 <h3 align="center">Pilot API</h3>
@@ -96,8 +96,6 @@ A proof of concept API to explore best-practices and new ideas
 <!-- GETTING STARTED -->
 ## Getting Started
 
-TBD
-
 ### Prerequisites
 
 - [Visual Studio 2026](https://visualstudio.microsoft.com/vs/)
@@ -119,7 +117,12 @@ TBD
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-TBD
+The API contract for this project is defined in the OpenAPI specification file located at `docs/openapi.yaml`.
+You can use this file to generate client code or to explore the API using tools like Swagger UI or Bruno.
+
+To get a visual representation of the API, you can use the Swagger editor by navigating to `https://editor.swagger.io/` after running the application.
+
+You can also interact with the API using the Swagger UI by navigating to `https://localhost:5001/swagger` after running the application.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -128,10 +131,10 @@ TBD
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+- [x] API (.NET)
+    - [ ] Deploy API to a Docker container
+- [ ] Angular Frontend User Interface
+- [ ] Java Version of the API
 
 See the [open issues](https://github.com/MikeLooper/PilotApi/issues) for a full list of proposed features (and known issues).
 
@@ -186,9 +189,9 @@ Project Link: [https://github.com/MikeLooper/PilotApi](https://github.com/MikeLo
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-* []()
-* []()
-* []()
+* [TBD]()
+* [TBD]()
+* [TBD]()
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

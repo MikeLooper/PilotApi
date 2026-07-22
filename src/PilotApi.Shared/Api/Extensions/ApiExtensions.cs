@@ -104,7 +104,14 @@ namespace PilotApi.Shared.Api.Extensions
 
 			// standard
 			webApp.UseSecurity();
-			webApp.MapControllers();
+			try
+			{
+				webApp.MapControllers();
+			}
+			catch (InvalidOperationException)
+			{
+				// Controllers not registered; skip mapping
+			}
 		}
 
 		/// <summary>
@@ -152,6 +159,12 @@ namespace PilotApi.Shared.Api.Extensions
 		/// </param>
 		public static void UseSecurity(this WebApplication webApp)
 		{
+			if (webApp == null)
+			{
+				throw new ArgumentException($"Invalid argument : {nameof(webApp)}. "
+					+ $"A valid object type of: '{typeof(WebApplication)}' is needed to continue. ({nameof(ApiExtensions)})");
+			}
+
 			//webApp.UseAuthentication();
 			//webApp.UseAuthorization();
 		}

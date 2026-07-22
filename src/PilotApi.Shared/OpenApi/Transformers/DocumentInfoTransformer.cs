@@ -29,8 +29,6 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
 		{
 			// Set the primary info section fields
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604 // Possible null reference argument.
 			document.Info.Title = this.ApplicationConfiguration.OpenApi.Title;
 			document.Info.Version = this.ApplicationConfiguration.OpenApi.Version;
 			document.Info.Description = this.ApplicationConfiguration.OpenApi.Description;
@@ -51,8 +49,6 @@ namespace PilotApi.Shared.OpenApi.Transformers
 				Name = this.ApplicationConfiguration.OpenApi.License,
 				Url = new Uri("https://opensource.org")
 			};
-#pragma warning restore CS8604 // Possible null reference argument.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 			return Task.CompletedTask;
 		}

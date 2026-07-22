@@ -34,7 +34,7 @@ namespace PilotApi.Shared.Utilities
 					continue;
 				}
 
-				if (partParts[0].Equals("Password", System.StringComparison.InvariantCultureIgnoreCase))
+				if (partParts[0].Equals("Password", System.StringComparison.OrdinalIgnoreCase))
 				{
 					partParts[1] = StringConstants.Redacted;
 				}

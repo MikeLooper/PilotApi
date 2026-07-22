@@ -1,5 +1,4 @@
-﻿using PilotApi.Shared.Constants;
-using PilotApi.Shared.Contracts.Configuration.Base;
+﻿using PilotApi.Shared.Contracts.Configuration.Base;
 
 namespace PilotApi.Shared.Contracts.Configuration
 {
@@ -19,10 +18,9 @@ namespace PilotApi.Shared.Contracts.Configuration
 	/// <code>
 	/// {
 	///		"ConnectTimeout": 0,
-	///		"DataSourceName": "SampleDatabase",
-	///		"DataSourceType": "SqlServer",
+	///		"DataSourceName": "SampleDataSource",
 	///		"Host": "localhost",
-	///		"Password": "sedrt^FLKNR434",
+	///		"Password": "[.........]",
 	///		"Port": 0,
 	///		"UserName": "SampleUser"
 	/// }
@@ -36,20 +34,10 @@ namespace PilotApi.Shared.Contracts.Configuration
 		int ConnectTimeout { get; set; }
 
 		/// <summary>
-		/// Gets or sets the data source type (e.g., "SqlServer", "PostgreSQL") as an enum.
-		/// This will one of the <see cref="DataSources"/> options.
-		/// </summary>
-		DataSources DataSourceEnum { get; set; }
-
-		/// <summary>
-		/// Gets or sets the data source name.
+		/// Gets or sets the name of the related data source settings section.
+		/// This value will match an Application.DataSources[???].DataSourceName setting.
 		/// </summary>
 		string? DataSourceName { get; set; }
-
-		/// <summary>
-		/// Gets or sets the data source type (e.g., "SqlServer", "PostgreSQL").
-		/// </summary>
-		string? DataSourceType { get; set; }
 
 		/// <summary>
 		/// Gets or sets the data source host (e.g., "localhost")

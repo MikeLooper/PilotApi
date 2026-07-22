@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using PilotApi.Domain.Contracts.DataSource;
+using PilotApi.Shared.Configuration;
 using PilotApi.Shared.Constants;
 using PilotApi.Shared.Contracts.Configuration;
 using PilotApi.Shared.Exceptions;
+using PilotApi.Shared.Handlers;
 using PilotApi.Shared.Utilities;
 using System;
 using System.Data;
@@ -25,19 +27,29 @@ namespace PilotApi.Repositories.DataSource
 		/// <summary>
 		/// Instantiate a <see cref="DataSourceContext"/> object.
 		/// </summary>
-		/// <param name="loggerFactory"></param>
-		/// <param name="applicationConfiguration"></param>
-		/// <exception cref="ConfigurationException"></exception>
+		/// <param name="loggerFactory">
+		/// A logger factory object.
+		/// </param>
+		/// <param name="applicationConfiguration">
+		/// An application configuration object.
+		/// </param>
+		/// <exception cref="ConfigurationException">
+		/// An exception related to invalid values in the configuration.
+		/// </exception>
+		/// <param name="sqlBuilder">
+		/// A SQL builder object.
+		/// </param>
 		public DataSourceContext(
 			ILoggerFactory loggerFactory,
-			IApplicationConfiguration applicationConfiguration)
+			IApplicationConfiguration applicationConfiguration,
+			ISqlBuilder sqlBuilder)
 		{
 			this.Logger = loggerFactory.CreateLogger(GetType());
 			this.ApplicationConfiguration = applicationConfiguration;
-#pragma warning disable CS8604 // Possible null reference argument.
+			this.SqlBuilder = sqlBuilder;
+
 			this.DataConnectionConfiguration = applicationConfiguration.DataConnections
 				.First(f => f.Active);
-#pragma warning restore CS8604 // Possible null reference argument.
 
 			if (this.DataConnectionConfiguration == null)
 			{
@@ -45,26 +57,31 @@ namespace PilotApi.Repositories.DataSource
 					$"The {nameof(IApplicationConfiguration)}.{nameof(applicationConfiguration.DataConnections)} " + 
 					$"section should have at least one active setting ({this.GetType().Name})");
 			}
+
+			this.DataSourceConfiguration = applicationConfiguration.GetDataSource(this.DataConnectionConfiguration.DataSourceName);
 		}
 
 		/// <inheritdoc/>>
-		protected IApplicationConfiguration? ApplicationConfiguration { get; }
-
-		/// <summary>
-		/// Gets a data source connection string.
-		/// </summary>
-		protected string? ConnectionString { get; private set; }
-
-		/// <summary>
-		/// Gets or sets a data source connection string.
-		/// </summary>
 		public string? ConnectionStringClean { get; private set; }
 
 		/// <inheritdoc/>>
 		public IDataConnectionConfiguration? DataConnectionConfiguration { get; }
 
 		/// <inheritdoc/>>
+		public IDataSourceConfiguration? DataSourceConfiguration { get; }
+
+		/// <inheritdoc/>>
 		public IDbTransaction? DataSourceTransaction { get; set; }
+
+		/// <summary>
+		/// Gets an application configuration object.
+		/// </summary>
+		protected IApplicationConfiguration? ApplicationConfiguration { get; }
+
+		/// <summary>
+		/// Gets a data source connection string.
+		/// </summary>
+		protected string? ConnectionString { get; private set; }
 
 		/// <summary>
 		/// Gets or sets a <see cref="IDbConnection"/> object.
@@ -76,6 +93,11 @@ namespace PilotApi.Repositories.DataSource
 		/// Gets the logger instance for logging information, warnings, and errors.
 		/// </summary>
 		protected ILogger Logger { get; }
+
+		/// <summary>
+		/// Gets a SQL builder object.
+		/// </summary>
+		protected ISqlBuilder SqlBuilder { get; }
 
 		/// <inheritdoc/>>
 		public async Task Commit()
@@ -91,38 +113,22 @@ namespace PilotApi.Repositories.DataSource
 		{
 			if (this.DataSourceConnectionInternal == null)
 			{
+				this.ConnectionString = this.SqlBuilder.BuildConnectionString(this.ApplicationConfiguration.OpenApi);
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-				if (this.DataConnectionConfiguration.DataSourceEnum == DataSources.SqlServer)
+				if (this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.SqlServer)
 				{
-					// MS SQL Sever
-					var dataSource = this.DataConnectionConfiguration.Host;
-					if (this.DataConnectionConfiguration.Port != null)
-					{
-						dataSource += "," + this.DataConnectionConfiguration.Port.ToString();
-					}
-
-					this.ConnectionString = $"Data Source={dataSource};Initial Catalog={this.DataConnectionConfiguration.DataSourceName};" +
-						$"User Id={this.DataConnectionConfiguration.UserName};Password={this.DataConnectionConfiguration.Password};" +
-						$"Connect Timeout={this.DataConnectionConfiguration.ConnectTimeout};Trust Server Certificate=True;" +
-						$"Application Name={this.ApplicationConfiguration.OpenApi.Title}";
+					// MS SQL Server
 					this.DataSourceConnectionInternal = new SqlConnection(this.ConnectionString);
+				}
+				else if (this.DataSourceConfiguration.DataSourceEnum == DataSourceTypes.PostgreSQL)
+				{
+					// PostGreSQL
+					this.DataSourceConnectionInternal = new NpgsqlConnection(this.ConnectionString);
 				}
 				else
 				{
-					// PostGreSQL
-					this.ConnectionString = $"Host={this.DataConnectionConfiguration.Host};Database={this.DataConnectionConfiguration.DataSourceName};" +
-						$"Username={this.DataConnectionConfiguration.UserName};Password={this.DataConnectionConfiguration.Password};" +
-						$"Timeout={this.DataConnectionConfiguration.ConnectTimeout};SslMode=VerifyFull;TrustServerCertificate=true;" +
-						$"Application Name={this.ApplicationConfiguration.OpenApi.Title}";
-					if (this.DataConnectionConfiguration.Port != null)
-					{
-						this.ConnectionString += $";Port={this.DataConnectionConfiguration.Port}";
-					}
-
-					this.DataSourceConnectionInternal = new NpgsqlConnection(this.ConnectionString);
+					throw new InvalidOperationException($"Unhandled data source type: '{this.DataSourceConfiguration.DataSourceEnum}' ({this.GetType().Name})");
 				}
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 				this.ConnectionStringClean = SecurityUtilities.ConnectionStringClean(this.ConnectionString);
 			}
@@ -137,7 +143,11 @@ namespace PilotApi.Repositories.DataSource
 
 			if (this.DataSourceConnectionInternal.State == ConnectionState.Open)
 			{
-				this.DataSourceTransaction = this.DataSourceConnectionInternal.BeginTransaction();
+				if (this.DataSourceTransaction == null ||
+					this.DataSourceTransaction.Connection == null)
+				{
+					this.DataSourceTransaction = this.DataSourceConnectionInternal.BeginTransaction();
+				}
 			}
 
 			return this.DataSourceConnectionInternal;
@@ -146,7 +156,8 @@ namespace PilotApi.Repositories.DataSource
 		/// <inheritdoc/>>
 		public async Task Rollback()
 		{
-			if (this.DataSourceTransaction != null)
+			if (this.DataSourceTransaction != null &&
+				this.DataSourceTransaction.Connection != null)
 			{
 				this.DataSourceTransaction.Rollback();
 			}
@@ -164,12 +175,15 @@ namespace PilotApi.Repositories.DataSource
 
 		private bool disposed;
 
+
+		/// <inheritdoc/>>
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
+		/// <inheritdoc/>>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!disposed)
@@ -181,6 +195,8 @@ namespace PilotApi.Repositories.DataSource
 						if (this.DataSourceConnectionInternal.State == ConnectionState.Open)
 						{
 							this.DataSourceConnectionInternal.Close();
+							this.DataSourceTransaction.Dispose();
+							this.DataSourceTransaction = null;
 						}
 
 						this.DataSourceConnectionInternal.Dispose();

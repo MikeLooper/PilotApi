@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using PilotApi.Domain.Contracts.Base;
 using PilotApi.Domain.Contracts.Services.Base;
+using PilotApi.Domain.Models.Dto;
 using PilotApi.Repositories.Contracts.Repository.Base;
 using PilotApi.Repositories.Models.Base;
 using PilotApi.Services.Contracts;
@@ -11,6 +12,15 @@ using System.Threading.Tasks;
 
 namespace PilotApi.Services.Services.Base
 {
+	/// <summary>
+	/// A base class for services.
+	/// </summary>
+	/// <typeparam name="TDto">
+	/// The type for DTO classes.
+	/// </typeparam>
+	/// <typeparam name="TEntity">
+	/// The type for Entity classes.
+	/// </typeparam>
 	public abstract class ServiceBase<TDto, TEntity> : IServiceBase<TDto> where TDto : IDtoBase where TEntity : EntityBase
 	{
 		/// <summary>
@@ -51,7 +61,7 @@ namespace PilotApi.Services.Services.Base
 		protected IRepositoryBase<TEntity> Repository { get; }
 
 		/// <inheritdoc/>>
-		public async Task<bool> DeleteAsync<TType>(params TType[] ids)
+		public async Task<RetrieveResponse<bool>> DeleteAsync<TType>(params TType[] ids)
 		{
 			if (ids.Length < 1)
 			{
@@ -62,28 +72,28 @@ namespace PilotApi.Services.Services.Base
 		}
 
 		/// <inheritdoc/>>
-		public async Task<List<TDto>?> GetAllAsync()
+		public async Task<RetrieveResponse<List<TDto>>?> GetAllAsync()
 		{
-			var entities = await this.Repository.GetAllAsync();
-			var mapped = await this.DataMapperHandler.MapEntityToDtoList<TDto, TEntity>(entities);
-			return mapped?.ToList();
+			var retrieveResponse = await this.Repository.GetAllAsync();
+			var mapped = await this.DataMapperHandler.MapEntityToDtoList<TDto, TEntity>(retrieveResponse.Result);
+			return new RetrieveResponse<List<TDto>>(mapped?.ToList(), retrieveResponse.ErrorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public async Task<TDto?> GetByIdAsync<TType>(params TType[] ids)
+		public async Task<RetrieveResponse<TDto>?> GetByIdAsync<TType>(params TType[] ids)
 		{
 			if (ids.Length < 1)
 			{
 				throw new ArgumentException($"The supplied ids list ({ids} must contain at least one item ({this.GetType().Name})");
 			}
 
-			var entity = await this.Repository.GetAsync(ids);
-			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(entity);
-			return mapped;
+			var retrieveResponse = await this.Repository.GetAsync(ids);
+			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(retrieveResponse.Result);
+			return new RetrieveResponse<TDto>(mapped, retrieveResponse.ErrorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public async Task<int> InsertAsync(TDto model)
+		public async Task<RetrieveResponse<TReturn>?> InsertAsync<TReturn>(TDto model)
 		{
 			if (model == null)
 			{
@@ -91,51 +101,51 @@ namespace PilotApi.Services.Services.Base
 			}
 
 			var mapped = await this.DataMapperHandler.MapDtoToEntity<TDto, TEntity>(model);
-			var result = await this.Repository.InsertAsync(mapped);
+			var result = await this.Repository.InsertAsync<TReturn>(mapped);
 			return result;
 		}
 
 		/// <inheritdoc/>>
-		public async Task<List<TDto>?> QueryAsync(string query, object? parameters = null)
+		public async Task<RetrieveResponse<List<TDto>>?> QueryAsync(string query, object? parameters = null)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new ArgumentException($"Invalid argument: {nameof(query)}");
 			}
 
-			var entities = await this.Repository.QueryAsync(query, parameters);
-			var mapped = await this.DataMapperHandler.MapEntityToDtoList<TDto, TEntity>(entities);
-			return mapped?.ToList();
+			var retrieveResponse = await this.Repository.QueryAsync(query, parameters);
+			var mapped = await this.DataMapperHandler.MapEntityToDtoList<TDto, TEntity>(retrieveResponse.Result);
+			return new RetrieveResponse<List<TDto>>(mapped?.ToList(), retrieveResponse.ErrorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public async Task<TDto?> QueryFirstAsync(string query, object? parameters = null)
+		public async Task<RetrieveResponse<TDto>?> QueryFirstAsync(string query, object? parameters = null)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new ArgumentException($"Invalid argument: {nameof(query)}");
 			}
 
-			var entity = await this.Repository.QueryFirstAsync(query, parameters);
-			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(entity);
-			return mapped;
+			var retrieveResponse = await this.Repository.QueryFirstAsync(query, parameters);
+			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(retrieveResponse.Result);
+			return new RetrieveResponse<TDto>(mapped, retrieveResponse.ErrorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public async Task<TDto?> QuerySingleAsync(string query, object? parameters = null)
+		public async Task<RetrieveResponse<TDto>?> QuerySingleAsync(string query, object? parameters = null)
 		{
 			if (string.IsNullOrWhiteSpace(query))
 			{
 				throw new ArgumentException($"Invalid argument: {nameof(query)}");
 			}
 
-			var entity = await this.Repository.QuerySingleAsync(query, parameters);
-			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(entity);
-			return mapped;
+			var retrieveResponse = await this.Repository.QuerySingleAsync(query, parameters);
+			var mapped = await this.DataMapperHandler.MapEntityToDto<TDto, TEntity>(retrieveResponse.Result);
+			return new RetrieveResponse<TDto>(mapped, retrieveResponse.ErrorMessage);
 		}
 
 		/// <inheritdoc/>>
-		public async Task<bool> UpdateAsync(TDto model)
+		public async Task<RetrieveResponse<bool>> UpdateAsync(TDto model)
 		{
 			if (model == null)
 			{

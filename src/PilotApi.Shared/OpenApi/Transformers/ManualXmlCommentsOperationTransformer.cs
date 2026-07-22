@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -28,6 +29,16 @@ namespace PilotApi.Shared.OpenApi.Transformers
 		/// </param>
 		public ManualXmlCommentsOperationTransformer(string xmlPath)
 		{
+			if (xmlPath == null)
+			{
+				throw new ArgumentNullException(nameof(xmlPath));
+			}
+
+			if (string.IsNullOrWhiteSpace(xmlPath))
+			{
+				throw new InvalidOperationException($"The {nameof(xmlPath)} argument cannot be empty ({nameof(ManualXmlCommentsOperationTransformer)})");
+			}
+
 			_xmlDoc = XDocument.Load(xmlPath);
 		}
 

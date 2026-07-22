@@ -1,4 +1,5 @@
-﻿using PilotApi.Shared.Contracts.Configuration;
+﻿using PilotApi.Shared.Configuration;
+using PilotApi.Shared.Contracts.Configuration;
 using System;
 using System.Data;
 using System.Threading.Tasks;
@@ -19,6 +20,11 @@ namespace PilotApi.Domain.Contracts.DataSource
 		/// Gets a <see cref="IDataConnectionConfiguration"/> object.
 		/// </summary>
 		IDataConnectionConfiguration? DataConnectionConfiguration { get; }
+
+		/// <summary>
+		/// Gets a <see cref="IDataSourceConfiguration"/> object.
+		/// </summary>
+		IDataSourceConfiguration? DataSourceConfiguration { get; }
 
 		/// <summary>
 		/// Gets or sets a <see cref="IDbTransaction"/> object.

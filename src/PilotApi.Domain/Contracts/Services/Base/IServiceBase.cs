@@ -1,4 +1,5 @@
 ﻿using PilotApi.Domain.Contracts.Base;
+using PilotApi.Domain.Models.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A flag indicating whether the deletion was successful or not.
 		/// </returns>
-		Task<bool> DeleteAsync<TType>(params TType[] ids);
+		Task<RetrieveResponse<bool>> DeleteAsync<TType>(params TType[] ids);
 
 		/// <summary>
 		/// Gets all DTO objects of the given type.
@@ -27,7 +28,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A collection of DTO objects of the given type, or null if no objects were found.
 		/// </returns>
-		Task<List<TDto>?> GetAllAsync();
+		Task<RetrieveResponse<List<TDto>>?> GetAllAsync();
 
 		/// <summary>
 		/// Gets a DTO object of the given type by its ID.
@@ -38,7 +39,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A DTO object of the given type, or null if no object was found with the specified ID.
 		/// </returns>
-		Task<TDto?> GetByIdAsync<TType>(params TType[] ids);
+		Task<RetrieveResponse<TDto>?> GetByIdAsync<TType>(params TType[] ids);
 
 		/// <summary>
 		/// Inserts a new DTO object of the given type into the data store.
@@ -49,7 +50,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// The ID of the newly inserted DTO object, or 0 if the insertion failed.
 		/// </returns>
-		Task<int> InsertAsync(TDto model);
+		Task<RetrieveResponse<TReturn>?> InsertAsync<TReturn>(TDto model);
 
 		/// <summary>
 		/// Executes a query against the data store and returns a collection of DTO objects of the given type that match the query criteria.
@@ -63,7 +64,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A collection of DTO objects of the given type that match the query criteria, or null if no objects were found.
 		/// </returns>
-		Task<List<TDto>?> QueryAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<List<TDto>>?> QueryAsync(string query, object? parameters = null);
 
 		/// <summary>
 		/// Executes a query against the data store and returns the first DTO object of the given type that matches the query criteria.
@@ -77,7 +78,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A DTO object of the given type that matches the query criteria, or null if no object was found.
 		/// </returns>
-		Task<TDto?> QueryFirstAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<TDto>?> QueryFirstAsync(string query, object? parameters = null);
 
 		/// <summary>
 		/// Executes a query against the data store and returns a single DTO object of the given type that matches the query criteria.
@@ -91,7 +92,7 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A DTO object of the given type that matches the query criteria, or null if no object was found.
 		/// </returns>
-		Task<TDto?> QuerySingleAsync(string query, object? parameters = null);
+		Task<RetrieveResponse<TDto>?> QuerySingleAsync(string query, object? parameters = null);
 
 		/// <summary>
 		/// Updates an existing DTO object of the given type in the data store.
@@ -102,6 +103,6 @@ namespace PilotApi.Domain.Contracts.Services.Base
 		/// <returns>
 		/// A flag indicating whether the update was successful or not.
 		/// </returns>
-		Task<bool> UpdateAsync(TDto model);
+		Task<RetrieveResponse<bool>> UpdateAsync(TDto model);
 	}
 }
