@@ -2,7 +2,6 @@ REM Docker - Setup - PostgreSQL
 
 REM Prep
 REM 	A. Substitutions - in order for this script to work the follwing placeholders will need correct values substituted:
-REM 		- <sa-password>
 REM 		- <dev-user-password>
 
 REM 	B. Change to the working directory:

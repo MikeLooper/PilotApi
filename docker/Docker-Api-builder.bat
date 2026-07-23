@@ -40,7 +40,7 @@ REM 13. Build the docker image (for SQL Server):
 docker build -t pilot-api-dotnet-mssql:1.0 .
 
 REM 14. Create and start the container (for SQL Server):
-docker run -d -p 55551:55551 --network pilot-net -m 512m --name pilot-api-dotnet-mssql pilot-api-dotnet-mssql:1.0
+docker run -d -p 55551:55551 --network pilot-net -m 1g --name pilot-api-dotnet-mssql pilot-api-dotnet-mssql:1.0
 
 REM 15. Copy the dockerfile to the publish directory (for PostgreSQL):
 copy /y "..\PilotApiDotNet\docker\Api\dockerfile_postgres" ".\dockerfile"

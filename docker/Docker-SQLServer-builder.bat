@@ -1,7 +1,7 @@
 REM Docker - Setup - SQL Server
 
 REM Prep
-REM 	A. Substitutions - in order for this script to work the follwing placeholders will need correct values substituted:
+REM 	A. Substitutions - in order for this script to work the following placeholders will need correct values substituted:
 REM 		- <sa-password>
 REM 		- <dev-user-password>
 

@@ -3,6 +3,10 @@
 Install and set up SQL Server on Docker.
 
 Prep:
+  - Substitutions: in order for this following steps to work the following placeholders will need correct values substituted:
+    - <sa-password>
+    - <dev-user-password>
+
   - Change to the working directory:
     ```
     cd C:\Working\Storage\Dev\GitHub\Working

@@ -7,6 +7,9 @@ Install and set up PostgreSQL on Docker.
   - [Download and Install](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/)
   - [Get Started](https://docs.docker.com/guides/postgresql/)
 
+  - Substitutions: in order for this following steps to work the following placeholders will need correct values substituted:
+    - <dev-user-password>
+
   - Change to the working directory:
     ```
     cd C:\Working\Storage\Dev\GitHub\Working

@@ -112,7 +112,7 @@ Run the standard command from your application's root directory:
   ```
   docker run -d -p 55552:55552 \
   --network pilot-net \
-  -m 512m \
+  -m 1g \
   --name pilot-api-dotnet-postgres pilot-api-dotnet-postgres:1.0
   ```
 
