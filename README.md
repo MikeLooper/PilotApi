@@ -112,7 +112,289 @@ A proof of concept API to explore best-practices and new ideas
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+### Local Development
 
+When Executing locally, a User Secrets file will be needed to provide local connection details.
+
+This User Secrets file will look like the following:
+```json
+{
+    "Application": {
+        "DataConnections": [
+            {
+                "Active": true,
+                "ConnectTimeout": 30,
+                "DataSourceName": "NorthWind_SQL",
+                "Host": "localhost",
+                "Password": "<DevUser password for SQL Server>",
+                "Port": 1433,
+                "UserName": "DevUser"
+            },
+            {
+                "Active": false,
+                "ConnectTimeout": 30,
+                "DataSourceName": "NorthWind_Pgs",
+                "Host": "localhost",
+                "Password": "<DevUser password for PostgreSQL>",
+                "Port": 5432,
+                "UserName": "DevUser"
+            }
+        ]
+    }
+}
+
+```
+
+The User Secrets file is located at `%APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json`.
+
+### Configuration
+
+The application configuration is broken into three files:
+- appsettings.json
+- appsettings.Development.json
+- appsettings.Production.json
+
+This separation simplifies changing which data connection is active for a specific deployment and provides separated locations for sensitive values.
+
+The data source values for Development are included in the local development config file, which can be found in the Web project:
+- appsettings.Development.json
+
+The data source values for Production are included in the docker-deploy config files, as noted here:
+- SQL Server:
+	- ..\docker\SqlServer\appsettings.Production.json
+- PostgreSQL:
+	- ..\docker\PostgreSQL\appsettings.Production.json
+
+#### Example configurations
+
+##### appsettings.json
+
+```json
+{
+	"Application": {
+		"DataSources": [
+			{
+				"Active": true,
+				"DataSourceName": "NorthWind_SQL",
+				"DataSource": "NorthWind",
+				"DataSourceType": "SqlServer",
+				"Schema": "dbo"
+			},
+			{
+				"Active": true,
+				"DataSourceName": "NorthWind_Pgs",
+				"DataSource": "northwind",
+				"DataSourceType": "PostgreSQL",
+				"Schema": "pilot"
+			}
+		],
+		"OpenApi": {
+			"Title": "PilotApiDotNet",
+			"Contact": {
+				"Email": "MikelLooper@gmail.com",
+				"Name": "Michael Looper",
+				"URL": "https://github.com/MikeLooper/PilotApiDotNet"
+			},
+			"Description": "A proof of concept API to explore best-practices and new ideas (.NET/C#)",
+			"License": "MIT",
+			"Summary": "Proof of concept API",
+			"Version": "0.1.1"
+		}
+	},
+	"Name": "OpenTelemetry",
+	"Args": {
+		"endpoint": "http://localhost:4317",
+		"protocol": "Grpc",
+		"resourceAttributes": {
+			"service.name": "serilog-demo-api"
+		}
+	},
+	"Serilog": {
+		"MinimumLevel": {
+			"Default": "Information",
+			"Override": {
+				"Microsoft": "Warning",
+				"Microsoft.AspNetCore.Hosting.Diagnostics": "Error",
+				"Microsoft.Hosting.Lifetime": "Information",
+				"System": "Warning"
+			}
+		},
+		"WriteTo": [
+			{ "Name": "Console" },
+			{
+				"Name": "File",
+				"Args": {
+					"path": "logs/log-.json",
+					"rollingInterval": "Day",
+					"rollOnFileSizeLimit": true,
+					"fileSizeLimitBytes": 104857600,
+					"retainedFileCountLimit": 14,
+					"formatter": "Serilog.Formatting.Compact.CompactJsonFormatter, Serilog.Formatting.Compact"
+				}
+			}
+		],
+		"Enrich": [
+			"FromLogContext",
+			"WithMachineName",
+			"WithProcessId",
+			"WithThreadId",
+			"WithExceptionDetails"
+		]
+	},
+	"AllowedHosts": "*"
+}
+```
+
+##### appsettings_dataconnections.json
+
+```json
+{
+	"Application": {
+		"DataConnections": [
+			{
+				"Active": true,
+				"ConnectTimeout": 30,
+				"DataSourceName": "NorthWind_SQL",
+				"Host": "local_mssql",
+				"Password": "<DevUser password>",
+				"Port": 1433,
+				"UserName": "DevUser"
+			},
+			{
+				"Active": false,
+				"ConnectTimeout": 30,
+				"DataSourceName": "NorthWind_Pgs",
+				"Host": "local_postgres",
+				"Password": "<DevUser password>",
+				"Port": 5432,
+				"UserName": "DevUser"
+			}
+		]
+	}
+}
+```
+
+The configuration that controls the application logic is in the "Application" section.
+
+#### DataConnections
+
+An array of data connections settings.
+
+##### Active
+
+Is the current section of settings active?  Available options: true, false.
+
+Within the DataConnections section, only one setting group can be active at one time.
+
+##### ConnectTimeout
+
+The number of seconds for the data source timeout.
+
+##### DataSourceName
+
+The name of the current data source section.
+
+This name will match A DataSources.DataSourceName setting.
+
+##### Host
+
+The name of the host for the data source.
+
+When running locally for development, this value would tyipcally be "localhost".
+
+When deployed to a Docker container, this value would ttyipcally be the name of the data source container.
+
+Examples: "local_mssql", "local_postgres"
+
+##### Password
+
+The password for the user for the data source.
+
+##### Port
+
+The active port for the target data source.
+
+##### UserName
+
+The name of the user for the data source.
+
+#### DataSources
+
+The available data sources (such as a database).
+
+##### Active
+
+Is the current section of settings active?  Available options: true, false.
+
+##### DataSourceName
+
+The name of the current data source section.
+
+This name will match A DataConnections.DataSourceName setting.
+
+##### DataSource
+
+The name of the data source, such as a database name.
+
+##### DataSourceType
+
+The type of data source.
+Available values: "SqlServer", "PostgreSQL"
+
+##### Schema
+
+The schema where the target tables would be found.
+
+#### OpenApi
+
+The settings that control how the OpenAPI specification is define within the application.
+
+These values will typically appear in an API UI or in an extracted OpenAPI specification.
+
+##### Title
+
+The API title.
+
+##### Contact
+
+A section of settings regarding who the point of contact is for this application.
+
+###### Email
+
+The email address of the contact person.
+
+###### Name
+
+The name of the contact person.
+
+###### URL
+
+A web address relating to the contact person.
+
+##### Description
+
+A description of this API.
+
+##### License
+
+The license relating to the source code for this application.
+
+##### Summary
+
+A summary of this API.
+
+##### Version
+
+The application version.
+
+### Deployment
+
+This application will be deployed to a Docker container.
+Deploy instructions can be found in the [Docker README](..\docker\README.md).
+
+Once deployed to Docker, the application will be accessible at `https://localhost:55551/...`.
+
+For Exmaple, the Categories endpoint for GetAll will be accessible at `http://localhost:55551/categories/get-all`.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -120,9 +402,9 @@ A proof of concept API to explore best-practices and new ideas
 The API contract for this project is defined in the OpenAPI specification file located at `docs/openapi.yaml`.
 You can use this file to generate client code or to explore the API using tools like Swagger UI or Bruno.
 
-To get a visual representation of the API, you can use the Swagger editor by navigating to `https://editor.swagger.io/` after running the application.
+To get a visual representation of the API, you can use the Swagger editor by navigating to `https://editor.swagger.io/`.
 
-You can also interact with the API using the Swagger UI by navigating to `https://localhost:5001/swagger` after running the application.
+You can also interact with the API using the Swagger UI by navigating to `https://localhost:5001/swagger` after running the application locally with Visual Studio.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
