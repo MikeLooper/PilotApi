@@ -2,6 +2,14 @@
 
 Install and set up SQL Server on Docker.
 
+## Database
+
+The Northwind database used in this process originally came from: https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
+
+The Downloaded Northwind database SQL has been modernized to remove obsolete datatypes and make the data loading INSERT statements friendlier.
+
+## Processing Steps
+
 Prep:
   - Substitutions: in order for this following steps to work the following placeholders will need correct values substituted:
     - <sa-password>
@@ -18,7 +26,7 @@ Prep:
 2. Clean up prior working files:
 
   ```
-  erase /S /Q .\*
+  erase /S /Q .\* > nul
   ```
 
 3. Remove a previously existing partition, if any is present:

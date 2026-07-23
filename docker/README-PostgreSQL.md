@@ -2,6 +2,14 @@
 
 Install and set up PostgreSQL on Docker.
 
+## Database
+
+The Northwind database used in this process originally came from: https://github.com/microsoft/sql-server-samples/tree/master/samples/databases/northwind-pubs
+
+The Downloaded Northwind database SQL has been altered to use PostgreSQL commands and make the data loading INSERT statements friendlier.
+
+## Processing Steps
+
 1. Setup:
   Docker documentation:
   - [Download and Install](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/)

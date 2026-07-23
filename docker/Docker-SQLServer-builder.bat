@@ -11,7 +11,7 @@ cd C:\Working\Storage\Dev\GitHub\Working
 REM 1. Setup - nothing to do here
 
 REM 2. Clean up prior working files:
-erase /S /Q .\*
+erase /S /Q .\* > nul
 
 REM 3. Remove a previously existing partition, if any is present:
 docker rm -f local_mssql
