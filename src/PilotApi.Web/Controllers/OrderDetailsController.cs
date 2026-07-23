@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace PilotApi.Web.Controllers
 {
 	/// <summary>
-	/// A contrller for accessing and manipulating OrderDetails data in the data store.
+	/// A controller for accessing and manipulating OrderDetails data in the data store.
 	/// </summary>
 	[ApiVersion("1.0")]
 	[Route("order-details")]

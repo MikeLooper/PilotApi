@@ -1072,6 +1072,23 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /healthcheck:
+    get:
+      tags:
+        - System
+      summary: Return an OK.
+      parameters:
+        - name: ApiVersion
+          in: header
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
 components:
   schemas:
     AddResponseInt:
@@ -1531,3 +1548,4 @@ tags:
   - name: Products
   - name: Shippers
   - name: Suppliers
+  - name: System
