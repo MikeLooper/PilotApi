@@ -6,102 +6,150 @@ Publish the API by following the commands:
 
 Run the standard command from your application's root directory:
 
+1. Change to the Working directory:
 
+  ```
+  cd C:\Working\Storage\Dev\GitHub\Working
+  ``` 
 
-1. Get the latest image:
+2. Remove a previously existing partition (for SQL Server), if any is present:
+  ```
+  docker rm -f pilot-api-dotnet-mssql
+  ```
+  
+3. Remove a previously existing partition (for PostgreSQL), if any is present:
+  ```
+  docker rm -f pilot-api-dotnet-postgres
+  ```
+  
+4. Remove a previously existing image (for SQL Server), if any is present:
+  ```
+  docker rmi pilot-api-dotnet-mssql:1.0
+  ```
+  
+5. Remove a previously existing image (for PostgreSQL), if any is present:
+  ```
+  docker rmi pilot-api-dotnet-postgres:1.0
+  ```
+  
+6. Get the latest image for .NET 10:
 
   ```
   docker pull mcr.microsoft.com/dotnet/aspnet:10.0
   ```
 
-2. Clean up prior working files:
+7. Clean up prior working files:
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase /S /Q .\* > nul
   ```
 
-3. Change to the application's root directory:
+8. Change to the application's root directory:
 
   ```
   cd ..\PilotApiDotNet
   ``` 
 
-4. Build the application, so it can execute on Linux
+9. Build the application, so it can execute on Linux (API Publish)
 
   ```
   dotnet publish --configuration Release --os linux --arch x64 --output ..\Working
   ```
 
-5. Change back to the working directory:
+10. Change to the Working directory:
 
   ```
   cd ..\Working
-  ```
-	
-6. Copy the dockerfile to the publish directory (for SQL Server):
+  ``` 
+
+11. Copy the dockerfile to the publish directory (for SQL Server):
 
   ```
-  copy /y "..\PilotApiDotNet\docker\Api\dockerfile_mssql" "C:\Working\Storage\Dev\GitHub\Working\dockerfile"
+  copy /y "..\PilotApiDotNet\docker\Api\dockerfile_mssql" ".\dockerfile"
   ```
 
-7. Copy the appsettings file to the publish directory (for SQL Server):
+12. Copy the appsettings file to the publish directory (for SQL Server):
 
   ```
-  copy /y "..\PilotApiDotNet\docker\SqlServer\appsettings.Production.json" "C:\Working\Storage\Dev\GitHub\Working"
+  copy /y "..\PilotApiDotNet\docker\SqlServer\appsettings.Production.json" "."
   ```
 
-8. build the docker image (for SQL Server):
+13. Build the docker image (for SQL Server):
 	
   ```
   docker build -t pilot-api-dotnet-mssql:1.0 .
   ```
 
-9. Create and start the container (for SQL Server):
+14. Create and start the container (for SQL Server):
 
   ```
   docker run -d -p 55551:55551 \
   --network pilot-net \
+  -m 1g \
   --name pilot-api-dotnet-mssql pilot-api-dotnet-mssql:1.0
   ```
 
-6. Copy the dockerfile to the publish directory (for SQL PostgreSQL):
+15. Copy the dockerfile to the publish directory (for PostgreSQL):
 
   ```
-  copy /y "..\PilotApiDotNet\docker\Api\dockerfile_postgres" "C:\Working\Storage\Dev\GitHub\Working\dockerfile"
+  copy /y "..\PilotApiDotNet\docker\Api\dockerfile_postgres" ".\dockerfile"
   ```
 
-10. Copy the appsettings file to the publish directory (for PostgreSQL):
+16. Copy the appsettings file to the publish directory (PostgreSQL):
 
   ```
-  copy /y "..\PilotApiDotNet\docker\PostgreSQL\appsettings.Production.json" "C:\Working\Storage\Dev\GitHub\Working"
+  copy /y "..\PilotApiDotNet\docker\PostgreSQL\appsettings.Production.json" "."
   ```
 
-11. build the docker image (for PostgreSQL):
+17. build the docker image (for PostgreSQL):
 	
   ```
   docker build -t pilot-api-dotnet-postgres:1.0 .
   ```
 
-12. Create and start the container (for PostgreSQL):
+18. Create and start the container (for PostgreSQL):
 
   ```
   docker run -d -p 55552:55552 \
   --network pilot-net \
+  -m 512m \
   --name pilot-api-dotnet-postgres pilot-api-dotnet-postgres:1.0
   ```
 
-13. Clean up prior working files:
+19. Clean up prior working files (optional):
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase /S /Q .\* > nul
+  ```
+
+20. Launch the healthcheck to validate the deploy  (for SQL Server)
+
+  ```
+  start http://localhost:55551/healthcheck
+  ```
+
+21. Launch the healthcheck to validate the deploy  (for PostgreSQL)
+
+  ```
+  start http://localhost:55552/healthcheck
   ```
 
 ## Usage
 
-After executing the above steps, you can now access your API at following base URL:
+After executing the above steps, you can now access your API at following base URL.
+
+### SQL Server
+
 ```
-http://localhost:55551/....
+http://localhost:55551/healthcheck
 ```
+
+### PostgreSQL
+
+```
+http://localhost:55552/healthcheck
+```
+
 ### Example Usages
 
 
@@ -115,11 +163,11 @@ This means that the Scalar and Swagger UIs will not be available, which follows 
 1. Start the Docker container:
 
 	```
-    docker start pilot-api-dotnet
+    docker start pilot-api-...-dotnet
 	```
 
 2. Stop and remove container:
 	```
-    docker rm -f pilot-api-dotnet
+    docker rm -f pilot-api-...-dotnet
 	```
 

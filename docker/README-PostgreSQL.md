@@ -2,31 +2,50 @@
 
 Install and set up PostgreSQL on Docker.
 
-Docker documentation:
-- [Download and Install](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/)
-- [Get Started](https://docs.docker.com/guides/postgresql/)
+1. Setup:
+  Docker documentation:
+  - [Download and Install](https://www.docker.com/blog/how-to-use-the-postgres-docker-official-image/)
+  - [Get Started](https://docs.docker.com/guides/postgresql/)
 
-1. Get the latest image:
+  - Change to the working directory:
+    ```
+    cd C:\Working\Storage\Dev\GitHub\Working
+    ```
+
+2. Clean up prior working files:
+
+  ```
+  erase /S /Q .\*
+  ```
+
+3. Remove a previously existing partition), if any is present:
+
+  ```
+  docker rm -f local_postgres
+  ```
+
+4. Get the latest image:
 
   ```
   docker pull postgres
   ```
 
-2. Create and start an instance:
+5. Create and start an instance:
 
   ```
   docker run --name local_postgres \
   -p 5432:5432 \
   --network pilot-net \
+  -m 512m \
   -e POSTGRES_USER=DevUser \
   -e POSTGRES_PASSWORD=<dev-user-password> \
   -e POSTGRES_DB=devDb \
   -v "postgres_data:/var/lib/postgresql" \
-  -v "C:\Working\Storage\Dev\GitHub\Working:/local_working" \
+  -v ".:/local_working" \
   -d postgres
   ```
 
-3. Create the northwind database:
+6. Create the northwind database:
 
   ```
   docker exec local_postgres psql -U DevUser -d devDb \
@@ -39,13 +58,13 @@ Docker documentation:
   docker exec local_postgres psql -U DevUser -d northwind
   ```
 
-4. Copy database script:
+7. Copy database script:
 
   ```
-  copy "..\PilotApiDotNet\docker\PostgreSQL\northwind.sql" "C:\Working\Storage\Dev\GitHub\Working"
+  copy "..\PilotApiDotNet\docker\PostgreSQL\northwind.sql" "."
   ```
 
-5. Load data into the database:
+8. Load data into the database:
 
   ```
   docker exec -i local_postgres psql -U DevUser -d northwind \
@@ -59,29 +78,29 @@ Docker documentation:
   -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'pilot' AND table_type = 'BASE TABLE';"
   ```
 
-6. Clean up prior working files:
+9. Clean up prior working files:
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase /S /Q .\*
   ```
 
-7. Copy custom script:
+10. Copy custom script:
 
   ```
-  copy "..\PilotApiDotNet\docker\PostgreSQL\customobjects.sql" "C:\Working\Storage\Dev\GitHub\Working"
+  copy "..\PilotApiDotNet\docker\PostgreSQL\customobjects.sql" "."
   ```
 
-8. Load data into the database:
+11. Load data into the database:
 
   ```
   docker exec -i local_postgres psql -U DevUser -d northwind \
   < ..\PilotApiDotNet\docker\PostgreSQL\customobjects.sql
   ```
 
-9. Clean up prior working files:
+12. Clean up prior working files:
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase .\* /S /Q
   ```
 
 ## Additional CLI commands

@@ -2,16 +2,34 @@
 
 Install and set up SQL Server on Docker.
 
-1. Setup:
-    - [Docker Quickstart](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/quickstart-install-docker?view=sql-server-ver17&tabs=cli&pivots=cs1-bash)
+Prep:
+  - Change to the working directory:
+    ```
+    cd C:\Working\Storage\Dev\GitHub\Working
+    ```
 
-2. Download the SQL Server image:
+1. Setup:
+  - [Docker Quickstart](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/quickstart-install-docker?view=sql-server-ver17&tabs=cli&pivots=cs1-bash)
+
+2. Clean up prior working files:
+
+  ```
+  erase /S /Q .\*
+  ```
+
+3. Remove a previously existing partition, if any is present:
+
+  ```
+  docker rm -f local_mssql
+  ```
+
+4. Download the SQL Server image:
 
   ```
   docker pull mcr.microsoft.com/mssql/server:2025-latest
   ```
 
-3. Create and start the new container:
+5. Create and start the new container:
 
   ```
   docker run \
@@ -19,6 +37,7 @@ Install and set up SQL Server on Docker.
   --hostname local_mssql \
   --name local_mssql \
   --network pilot-net \
+  -m 2g \
   -e "ACCEPT_EULA=Y" \
   -e "MSSQL_SA_PASSWORD=<sa-password>" \
   -e "MSSQL_AGENT_ENABLED=true" \
@@ -37,7 +56,7 @@ Install and set up SQL Server on Docker.
       - Base 10 digits (0 through 9)
       - Nonalphanumeric characters such as: exclamation point (!), dollar sign ($), number sign (#), or percent (%).
 
-4. Validate assignment of password:
+6. Validate assignment of password:
 
   ```
   docker exec -it local_mssql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "<sa-password>" -C
@@ -56,7 +75,7 @@ Install and set up SQL Server on Docker.
   docker restart local_mssql
   ```
 
-5. Disable the 'sa' account:
+7. Disable the 'sa' account:
     1. Create a new login user (to take the place of the 'sa' user id):
 	
     ```
@@ -73,7 +92,7 @@ Install and set up SQL Server on Docker.
 	  -Q "ALTER LOGIN [sa] DISABLE;"
 	  ```
 
-6. Create the NorthWind database:
+8. Create the NorthWind database:
 
   ```
   docker exec -it local_mssql /opt/mssql-tools18/bin/sqlcmd \
@@ -88,14 +107,14 @@ Install and set up SQL Server on Docker.
   -U DevUser -P "<dev-user-password>" -C -d NorthWind
   ```
 
-7. Copy database script:
+9. Copy database script:
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
-  copy "..\PilotApiDotNet\docker\SqlServer\Northwind.sql" "C:\Working\Storage\Dev\GitHub\Working"
+  erase /S /Q .\* > nul
+  copy "..\PilotApiDotNet\docker\SqlServer\Northwind.sql" "."
   ```
 
-8. Load data into the database:
+10. Load data into the database:
 
   ```
   docker exec -i local_mssql /opt/mssql-tools18/bin/sqlcmd \
@@ -110,19 +129,19 @@ Install and set up SQL Server on Docker.
   -Q "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
   ```
 
-9. Clean up prior working files:
+11. Clean up prior working files:
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase /S /Q .\* > nul
   ```
 
-10. Copy custom script:
+12. Copy custom script:
 
   ```
-  copy "..\PilotApiDotNet\docker\SqlServer\customobjects.sql" "C:\Working\Storage\Dev\GitHub\Working"
+  copy "..\PilotApiDotNet\docker\SqlServer\customobjects.sql" "."
   ```
 
-11. Load data into the database:
+13. Load data into the database:
 
   ```
   docker exec -i local_mssql /opt/mssql-tools18/bin/sqlcmd \
@@ -130,10 +149,10 @@ Install and set up SQL Server on Docker.
   < ..\PilotApiDotNet\docker\SqlServer\customobjects.sql
   ```
 
-12. Clean up prior working files:
+14. Clean up prior working files (optional):
 
   ```
-  erase C:\Working\Storage\Dev\GitHub\Working\* /S /Q
+  erase /S /Q .\*
   ```
 
 ## Additional CLI commands
